@@ -1,7 +1,5 @@
 package com.example.balabala_beta;
 
-import androidx.fragment.app.FragmentActivity;
-
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.graphics.Color;
@@ -9,6 +7,10 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.util.Log;
 import android.view.Menu;
+
+import androidx.fragment.app.FragmentActivity;
+import androidx.navigation.ui.AppBarConfiguration;
+
 
 import com.google.android.gms.maps.CameraUpdate;
 import com.google.android.gms.maps.CameraUpdateFactory;
@@ -29,6 +31,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     private static final LatLng RHYF = new LatLng(-11.629749, 27.488710);
     private static final LatLng P1 = new LatLng(-11.625700, 27.485300);
     private static final LatLng P2 = new LatLng(-11.620, 27.480);
+
+    private AppBarConfiguration mAppBarConfiguration;
 
 
     @Override

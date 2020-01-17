@@ -66,8 +66,8 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                         .setAction("Action", null).show();
             }
         });
-        DrawerLayout drawer = findViewById(R.id.drawer_layout);
-        NavigationView navigationView = findViewById(R.id.nav_view);
+        final DrawerLayout drawer = findViewById(R.id.drawer_layout);
+        final NavigationView navigationView = findViewById(R.id.nav_view);
         // Passing each menu ID as a set of Ids because each
         // menu should be considered as top level destinations.
 
@@ -77,7 +77,18 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
             public boolean onNavigationItemSelected(@NonNull MenuItem menuItem) {
 
 
-                Log.e(TAG, "onNavigationItemSelected: ->  " + menuItem.getTitle() );
+                Log.e(TAG, "*" + menuItem.getTitle() + "*" );
+
+                if(menuItem.getTitle().equals("Choisir son itineraire")){
+                    Log.e(TAG, "onNavigationItemSelected: Direction"  );
+
+                }
+
+                if(menuItem.getTitle().equals("Partager sa localisation")){
+                    Log.e(TAG, "onNavigationItemSelected: Share loc" );
+                }
+
+                drawer.closeDrawers();
 
                 return false;
             }

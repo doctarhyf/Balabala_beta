@@ -1,8 +1,13 @@
 package com.example.balabala_beta;
 
+import android.Manifest;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
+import android.content.pm.PackageManager;
 import android.graphics.Color;
+
+
+import android.location.LocationManager;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
@@ -10,17 +15,14 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
+import androidx.core.app.ActivityCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
-import androidx.fragment.app.FragmentActivity;
-import androidx.navigation.NavController;
-import androidx.navigation.Navigation;
 import androidx.navigation.ui.AppBarConfiguration;
-import androidx.navigation.ui.NavigationUI;
-
 
 import com.google.android.gms.maps.CameraUpdate;
 import com.google.android.gms.maps.CameraUpdateFactory;
@@ -47,9 +49,13 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Timer;
+import java.util.TimerTask;
 
 public class MapsActivity extends AppCompatActivity implements OnMapReadyCallback {
 
+    private static final long LOCATION_REFRESH_TIME = 5000;
+    private static final float LOCATION_REFRESH_DISTANCE = 5;
     private GoogleMap mMap;
     ArrayList markerPoints = new ArrayList();
 
@@ -59,13 +65,36 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     private static final LatLng P1 = new LatLng(-11.625700, 27.485300);
     private static final LatLng P2 = new LatLng(-11.620, 27.480);
 
+
     private AppBarConfiguration mAppBarConfiguration;
+    private LocationManager mLocationManager;
+
+    // GPSTracker class
+    GPSTracker gps;
+    private Timer myTimer;
+
+    private static final int REQUEST_CODE_PERMISSION = 2;
+    String mPermission = Manifest.permission.ACCESS_FINE_LOCATION;
 
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_maps);
+
+        try {
+            if (ActivityCompat.checkSelfPermission(this, mPermission)
+                    != PackageManager.PERMISSION_GRANTED) {
+
+                ActivityCompat.requestPermissions(this, new String[]{mPermission},
+                        REQUEST_CODE_PERMISSION);
+
+                // If any permission above not allowed by user, this condition will
+                //execute every time, else your else part will work
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
 
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
@@ -97,6 +126,10 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                 if(menuItem.getTitle().equals("Choisir son itineraire")){
                     Log.e(TAG, "onNavigationItemSelected: Direction"  );
 
+                    CameraUpdate location = CameraUpdateFactory.newLatLngZoom(
+                            RHYF, 15);
+                    mMap.animateCamera(location);
+
                 }
 
                 if(menuItem.getTitle().equals("Partager sa localisation")){
@@ -124,9 +157,18 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 
 
 
+        myTimer = new Timer();
+        myTimer.schedule(new TimerTask() {
+            @Override
+            public void run() {
+                TimerMethod();
+            }
+
+        }, 0, 10000);
 
 
     }
+
 
 
     /**
@@ -341,6 +383,73 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         return url;
     }
 
+    private void TimerMethod()
+    {
+        //This method is called directly by the timer
+        //and runs in the same thread as the timer.
+
+        //We call the method that will work with the UI
+        //through the runOnUiThread method.
+
+
+        Log.e(TAG, "TimerMethod: " );
+
+        this.runOnUiThread(Timer_Tick);
+    }
+
+    private Runnable Timer_Tick = new Runnable() {
+        public void run() {
+
+            //This method runs in the same thread as the UI.
+
+            //Do something to the UI thread here
+            showCurrentLocation();
+
+        }
+    };
+
+    private void showCurrentLocation() {
+
+        // create class object
+        gps = new GPSTracker(MapsActivity.this);
+
+        // check if GPS enabled
+        if(gps.canGetLocation()){
+
+
+
+
+            double latitude = gps.getLatitude();
+            double longitude = gps.getLongitude();
+
+            // \n is for new line
+            Toast.makeText(getApplicationContext(), "Your Location is - \nLat: "
+                    + latitude + "\nLong: " + longitude, Toast.LENGTH_LONG).show();
+
+
+            LatLng curPos = new LatLng(latitude, longitude);
+            CameraUpdate location = CameraUpdateFactory.newLatLngZoom(
+                    curPos, 15);
+            mMap.animateCamera(location);
+
+
+            // TODO: 2020-01-19 set cur loc
+
+            mMap.addMarker(new MarkerOptions().position(curPos).title("Current User Position"));
+            mMap.animateCamera(CameraUpdateFactory.newLatLng(curPos));
+
+
+
+        }else{
+            // can't get location
+            // GPS or Network is not enabled
+            // Ask user to enable GPS/network in settings
+            gps.showSettingsAlert();
+        }
+
+        Log.e(TAG, "showCurrentLocation: " );
+    }
+
     private String downloadUrl(String strUrl) throws IOException {
         String data = "";
         InputStream iStream = null;
@@ -375,6 +484,8 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         }
         return data;
     }
+
+
     /*
     @Override
     public boolean onSupportNavigateUp() {

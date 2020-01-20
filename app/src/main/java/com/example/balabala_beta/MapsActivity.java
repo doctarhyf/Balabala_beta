@@ -8,7 +8,6 @@ import android.graphics.Color;
 
 
 import android.location.LocationManager;
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
 import android.util.Log;
@@ -30,25 +29,16 @@ import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.Circle;
-import com.google.android.gms.maps.model.CircleOptions;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
-import com.google.android.gms.maps.model.PolylineOptions;
+import com.google.android.gms.maps.model.Polygon;
+import com.google.android.gms.maps.model.PolygonOptions;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.navigation.NavigationView;
 import com.google.android.material.snackbar.Snackbar;
 
-import org.json.JSONObject;
-
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.net.HttpURLConnection;
-import java.net.URL;
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -58,6 +48,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     private static final float LOCATION_REFRESH_DISTANCE = 5;
     private GoogleMap mMap;
     ArrayList markerPoints = new ArrayList();
+    Marker curPosMarker;
 
     private static final String TAG = "balabala";
 
@@ -75,6 +66,8 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 
     private static final int REQUEST_CODE_PERMISSION = 2;
     String mPermission = Manifest.permission.ACCESS_FINE_LOCATION;
+    private float defaultGraphicsScaleKM = 0.25f / 128f;
+    private double defaultGraphicsRectScaleRectHeight = 6.0f;
 
 
     @Override
@@ -238,7 +231,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         });
 
         // Add a marker in Sydney and move the camera
-        LatLng sydney = new LatLng(-34, 151);
+        /*LatLng sydney = new LatLng(-34, 151);
         mMap.addMarker(new MarkerOptions().position(sydney).title("Marker in Sydney"));
         mMap.moveCamera(CameraUpdateFactory.newLatLng(sydney));
 
@@ -249,18 +242,32 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         mMap.moveCamera(CameraUpdateFactory.newLatLng(sydney));
 
         mMap.addMarker(new MarkerOptions().position(P2).title("Bouchon KASAPA").visible(true));
-        mMap.moveCamera(CameraUpdateFactory.newLatLng(sydney));
+        mMap.moveCamera(CameraUpdateFactory.newLatLng(sydney));*/
 
 
-        circle1 = mMap.addCircle(new CircleOptions()
+
+        /*Polygon polygon = mMap.addPolygon(new PolygonOptions()
+                .add(new LatLng(0, 0), new LatLng(0, 5), new LatLng(5, 5), new LatLng(5, 0), new LatLng(0, 0))
+                .strokeColor(Color.RED)
+                .fillColor(Color.BLUE));*/
+
+        drawRoadBlockIntensityByLatLong(new LatLng(0,0), defaultGraphicsScaleKM, defaultGraphicsRectScaleRectHeight);
+
+        /*circle1 = mMap.addCircle(new CircleOptions()
                 .center(RHYF)
                 .radius(200)
                 .strokeColor(Color.RED)
                 .fillColor(Color.YELLOW));
 
-        circle1.setClickable(true);
+        circle1.setClickable(true);*/
 
-        circle2 = mMap.addCircle(new CircleOptions()
+        drawRoadBlockIntensityByLatLong(RHYF, defaultGraphicsScaleKM, defaultGraphicsRectScaleRectHeight);
+
+        drawRoadBlockIntensityByLatLong(P1, defaultGraphicsScaleKM, defaultGraphicsRectScaleRectHeight);
+
+        drawRoadBlockIntensityByLatLong(P2, defaultGraphicsScaleKM, defaultGraphicsRectScaleRectHeight);
+
+       /* circle2 = mMap.addCircle(new CircleOptions()
                 .center(P1)
                 .radius(200)
                 .strokeColor(Color.GREEN)
@@ -275,7 +282,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                 .fillColor(Color.WHITE));
 
         circle3.setClickable(true);
-
+*/
 
 
 
@@ -293,6 +300,28 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         }, 4000);
 
 
+    }
+
+    private Polygon drawRoadBlockIntensityByLatLong(LatLng latLng, float scale, double rectScale){
+
+        LatLng latLng1 = latLng;
+        LatLng latLng2 = new LatLng(latLng.latitude, latLng.longitude + (scale / rectScale));
+        LatLng latLng3 = new LatLng(latLng.latitude + scale, latLng.longitude + ( scale / rectScale));
+        LatLng latLng4 = new LatLng(latLng.latitude + scale, latLng.longitude);
+        LatLng latLng5 = latLng1;
+
+        Polygon polygon = mMap.addPolygon(new PolygonOptions()
+                //.add(new LatLng(0, 0), new LatLng(0, 5), new LatLng(5, 5), new LatLng(5, 0), new LatLng(0, 0))
+                .add(latLng1, latLng2, latLng3, latLng4, latLng5)
+                .strokeColor(Color.RED)
+                .strokeWidth(5f)
+                .geodesic(true)
+                .fillColor(Color.BLUE));
+
+
+        polygon.setClickable(true);
+
+        return polygon;
     }
 
     @Override
@@ -316,8 +345,6 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         //We call the method that will work with the UI
         //through the runOnUiThread method.
 
-
-        Log.e(TAG, "TimerMethod: " );
 
         this.runOnUiThread(Timer_Tick);
     }
@@ -360,7 +387,12 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 
             // TODO: 2020-01-19 set cur loc
 
-            mMap.addMarker(new MarkerOptions().position(curPos).title("Current User Position"));
+            if(curPosMarker != null) {
+
+                curPosMarker.remove();
+            }
+            curPosMarker = mMap.addMarker(new MarkerOptions().position(curPos).title(getResources().getString(R.string.str_ma_position)));
+            curPosMarker.showInfoWindow();
             mMap.animateCamera(CameraUpdateFactory.newLatLng(curPos));
 
 

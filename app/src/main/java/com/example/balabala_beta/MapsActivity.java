@@ -121,9 +121,9 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
             public boolean onNavigationItemSelected(@NonNull MenuItem menuItem) {
 
 
-                Log.e(TAG, "*" + menuItem.getTitle() + "*" );
+                //Log.e(TAG, "*" + menuItem.getTitle() + "*" );
 
-                if(menuItem.getTitle().equals("Choisir son itineraire")){
+                if(menuItem.getTitle().equals(getResources().getString(R.string.menu_choose_dest))){
                     Log.e(TAG, "onNavigationItemSelected: Direction"  );
 
                     CameraUpdate location = CameraUpdateFactory.newLatLngZoom(
@@ -132,7 +132,13 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 
                 }
 
-                if(menuItem.getTitle().equals("Partager sa localisation")){
+
+                if(menuItem.getTitle().equals(getResources().getString(R.string.menu_signal_road_block))){
+                    Log.e(TAG, "onNavigationItemSelected: -> SIgnal road block " );
+                }
+
+
+                if(menuItem.getTitle().equals(getResources().getString(R.string.menu_share_location))){
                     Log.e(TAG, "onNavigationItemSelected: Share loc" );
                 }
 
@@ -143,7 +149,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         });
 
         mAppBarConfiguration = new AppBarConfiguration.Builder(
-                R.id.nav_choose_dest, R.id.nav_share_location, R.id.nav_share)
+                R.id.nav_choose_dest, R.id.nav_signal_road_block, R.id.nav_share_location, R.id.nav_share)
                 .setDrawerLayout(drawer)
                 .build();
         //NavController navController = Navigation.findNavController(this, R.id.map);
@@ -302,87 +308,6 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 
 
 
-    private class ParserTask extends AsyncTask<String, Integer, List<List<HashMap>>> {
-
-        // Parsing the data in non-ui thread
-        @Override
-        protected List<List<HashMap>> doInBackground(String... jsonData) {
-
-            JSONObject jObject;
-            List<List<HashMap>> routes = null;
-
-            try {
-                jObject = new JSONObject(jsonData[0]);
-                DirectionsJSONParser parser = new DirectionsJSONParser();
-
-                //routes = parser.parse(jObject);
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-            return routes;
-        }
-
-        @Override
-        protected void onPostExecute(List<List<HashMap>> result) {
-            ArrayList points = null;
-            PolylineOptions lineOptions = null;
-            MarkerOptions markerOptions = new MarkerOptions();
-
-            for (int i = 0; i < result.size(); i++) {
-                points = new ArrayList();
-                lineOptions = new PolylineOptions();
-
-                List<HashMap> path = result.get(i);
-
-                for (int j = 0; j < path.size(); j++) {
-                    HashMap point = path.get(j);
-
-                    //double lat = Double.parseDouble(point.get("lat"));
-                    //double lng = Double.parseDouble(point.get("lng"));
-                    //LatLng position = new LatLng(lat, lng);
-
-                    //points.add(position);
-
-                    Log.e(TAG, "onPostExecute: " + j );
-                }
-
-                lineOptions.addAll(points);
-                lineOptions.width(12);
-                lineOptions.color(Color.RED);
-                lineOptions.geodesic(true);
-
-            }
-
-// Drawing polyline in the Google Map for the i-th route
-            mMap.addPolyline(lineOptions);
-        }
-    }
-
-    private String getDirectionsUrl(LatLng origin, LatLng dest) {
-
-        // Origin of route
-        String str_origin = "origin=" + origin.latitude + "," + origin.longitude;
-
-        // Destination of route
-        String str_dest = "destination=" + dest.latitude + "," + dest.longitude;
-
-        // Sensor enabled
-        String sensor = "sensor=false";
-        String mode = "mode=driving";
-
-        // Building the parameters to the web service
-        String parameters = str_origin + "&" + str_dest + "&" + sensor + "&" + mode;
-
-        // Output format
-        String output = "json";
-
-        // Building the url to the web service
-        String url = "https://maps.googleapis.com/maps/api/directions/" + output + "?" + parameters;
-
-
-        return url;
-    }
-
     private void TimerMethod()
     {
         //This method is called directly by the timer
@@ -449,50 +374,6 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 
         Log.e(TAG, "showCurrentLocation: " );
     }
-
-    private String downloadUrl(String strUrl) throws IOException {
-        String data = "";
-        InputStream iStream = null;
-        HttpURLConnection urlConnection = null;
-        try {
-            URL url = new URL(strUrl);
-
-            urlConnection = (HttpURLConnection) url.openConnection();
-
-            urlConnection.connect();
-
-            iStream = urlConnection.getInputStream();
-
-            BufferedReader br = new BufferedReader(new InputStreamReader(iStream));
-
-            StringBuffer sb = new StringBuffer();
-
-            String line = "";
-            while ((line = br.readLine()) != null) {
-                sb.append(line);
-            }
-
-            data = sb.toString();
-
-            br.close();
-
-        } catch (Exception e) {
-            Log.d("Exception", e.toString());
-        } finally {
-            iStream.close();
-            urlConnection.disconnect();
-        }
-        return data;
-    }
-
-
-    /*
-    @Override
-    public boolean onSupportNavigateUp() {
-        NavController navController = Navigation.findNavController(this, R.id.map);
-        return NavigationUI.navigateUp(navController, mAppBarConfiguration)
-                || super.onSupportNavigateUp();
-    }*/
 
 
 }

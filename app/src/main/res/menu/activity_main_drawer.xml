@@ -8,6 +8,12 @@
             android:id="@+id/nav_choose_dest"
             android:icon="@drawable/ic_menu_send"
             android:title="@string/menu_choose_dest" />
+
+        <item
+            android:id="@+id/nav_signal_road_block"
+            android:icon="@drawable/ic_menu_send"
+            android:title="@string/menu_signal_road_block"/>
+
         <item
             android:id="@+id/nav_share_location"
             android:icon="@drawable/ic_menu_share"

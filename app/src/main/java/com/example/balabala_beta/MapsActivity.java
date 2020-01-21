@@ -7,6 +7,7 @@ import android.content.pm.PackageManager;
 import android.graphics.Color;
 
 
+import android.location.Criteria;
 import android.location.LocationManager;
 import android.os.Bundle;
 import android.os.Handler;
@@ -364,6 +365,19 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 
         // create class object
         gps = new GPSTracker(MapsActivity.this);
+
+        Criteria criteria = new Criteria();
+        criteria.setAccuracy(Criteria.ACCURACY_FINE);
+        criteria.setPowerRequirement(Criteria.POWER_HIGH);
+        criteria.setAltitudeRequired(false);
+        criteria.setSpeedRequired(false);
+        criteria.setCostAllowed(true);
+        criteria.setBearingRequired(true);
+
+        criteria.setHorizontalAccuracy(Criteria.ACCURACY_HIGH);
+        criteria.setVerticalAccuracy(Criteria.ACCURACY_HIGH);
+
+
 
         // check if GPS enabled
         if(gps.canGetLocation()){

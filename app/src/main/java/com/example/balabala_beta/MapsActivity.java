@@ -24,6 +24,8 @@ import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
+import com.google.android.gms.maps.model.BitmapDescriptorFactory;
+import com.google.android.gms.maps.model.GroundOverlayOptions;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
@@ -36,17 +38,17 @@ import java.util.TimerTask;
 
 public class MapsActivity extends AppCompatActivity implements OnMapReadyCallback {
 
-
+    //private static final long LOCATION_REFRESH_TIME = 5000;
     private static final float LOCATION_REFRESH_DISTANCE = 5;
     private static final long MS_DURATION_REFRESH_CURRENT_LOCATION = 5000;
     private static final float MAP_DEFAULT_BLOCK_ZOOM_LEVEL = 20f;
     private GoogleMap mMap;
 
-
     private static final String TAG = "balabala";
 
     private static final LatLng RHYF = new LatLng(-11.629749, 27.488710);
-
+    private static final LatLng P1 = new LatLng(-11.625700, 27.485300);
+    //private static final LatLng P2 = new LatLng(-11.620, 27.480);
 
 
     private AppBarConfiguration mAppBarConfiguration;
@@ -58,8 +60,10 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 
     private static final int REQUEST_CODE_PERMISSION = 2;
     String mPermission = Manifest.permission.ACCESS_FINE_LOCATION;
+
     private Marker curLocationMarker;
     private boolean followMe = true;
+    private MenuItem menutItemFollowMe = null;
 
 
     @Override
@@ -120,6 +124,8 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                 }
 
                 if(menuItem.getItemId() == R.id.nav_follow_me){
+
+                    menutItemFollowMe = menuItem;
 
                     menuItem.setChecked(!menuItem.isChecked());
                     String locked = menuItem.isChecked() ? Utils.GR_GS(MapsActivity.this, R.string.str_follow_me) : Utils.GR_GS(MapsActivity.this, R.string.str_stop_following_me);
@@ -182,7 +188,48 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     }
 
     private void signalRoadBlock() {
+
+
+        // TODO: 2020-01-24 to be continued ( only for testing purposes ) 
         Log.e(TAG, "signalRoadBlock: " );
+
+        MarkerOptions markerOptions = new MarkerOptions();
+        markerOptions.position(gps.getLatLng())
+                .title("Road Block")
+                .icon(BitmapDescriptorFactory.fromResource(R.drawable.car_jam))
+                .rotation(0)
+                .draggable(false)
+                ;
+
+        mMap.addMarker(markerOptions);
+
+
+        CameraUpdate location = CameraUpdateFactory.newLatLngZoom(
+                gps.getLatLng(), MAP_DEFAULT_BLOCK_ZOOM_LEVEL);
+        mMap.animateCamera(location);
+
+
+        toggleFollowMe(false);
+
+
+
+    }
+
+    private void toggleFollowMe(boolean followMe) {
+
+
+
+        this.followMe = followMe;
+
+        if(menutItemFollowMe != null){
+
+
+            String locked = menutItemFollowMe.isChecked() ? Utils.GR_GS(MapsActivity.this, R.string.str_follow_me) : Utils.GR_GS(MapsActivity.this, R.string.str_stop_following_me);
+            menutItemFollowMe.setTitle(locked);
+
+
+        }
+
     }
 
     private void TimerMethod()
@@ -200,6 +247,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     };
 
     private void showCurrentLocation() {
+
 
 
         if(mMap != null && curLocationMarker != null) {

@@ -36,19 +36,17 @@ import java.util.TimerTask;
 
 public class MapsActivity extends AppCompatActivity implements OnMapReadyCallback {
 
-    //private static final long LOCATION_REFRESH_TIME = 5000;
+
     private static final float LOCATION_REFRESH_DISTANCE = 5;
     private static final long MS_DURATION_REFRESH_CURRENT_LOCATION = 5000;
     private static final float MAP_DEFAULT_BLOCK_ZOOM_LEVEL = 20f;
     private GoogleMap mMap;
-    //ArrayList markerPoints = new ArrayList();
-    //Marker curPosMarker;
+
 
     private static final String TAG = "balabala";
 
     private static final LatLng RHYF = new LatLng(-11.629749, 27.488710);
-    //private static final LatLng P1 = new LatLng(-11.625700, 27.485300);
-    //private static final LatLng P2 = new LatLng(-11.620, 27.480);
+
 
 
     private AppBarConfiguration mAppBarConfiguration;
@@ -60,8 +58,6 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 
     private static final int REQUEST_CODE_PERMISSION = 2;
     String mPermission = Manifest.permission.ACCESS_FINE_LOCATION;
-    private float defaultGraphicsScaleKM = 0.25f / 128f;
-    private double defaultGraphicsRectScaleRectHeight = 6.0f;
     private Marker curLocationMarker;
     private boolean followMe = true;
 
@@ -82,8 +78,13 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-                        .setAction("Action", null).show();
+                Snackbar.make(view, Utils.GR_GS(MapsActivity.this, R.string.str_is_there_road_block), Snackbar.LENGTH_LONG)
+                        .setAction(Utils.GR_GS(MapsActivity.this, R.string.menu_signal_road_block), new View.OnClickListener() {
+                            @Override
+                            public void onClick(View v) {
+                                signalRoadBlock();
+                            }
+                        }).show();
             }
         });
         final DrawerLayout drawer = findViewById(R.id.drawer_layout);
@@ -103,14 +104,14 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                     Log.e(TAG, "onNavigationItemSelected: Direction"  );
 
                     CameraUpdate location = CameraUpdateFactory.newLatLngZoom(
-                            RHYF, 15);
+                            RHYF, MAP_DEFAULT_BLOCK_ZOOM_LEVEL);
                     mMap.animateCamera(location);
 
                 }
 
 
                 if(menuItem.getItemId() == R.id.nav_signal_road_block){
-                    Log.e(TAG, "onNavigationItemSelected: -> SIgnal road block " );
+                    signalRoadBlock();
                 }
 
 
@@ -180,6 +181,10 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 
     }
 
+    private void signalRoadBlock() {
+        Log.e(TAG, "signalRoadBlock: " );
+    }
+
     private void TimerMethod()
     {
         // TODO: 2020-01-23 SHOW CUR LOC TICK
@@ -245,6 +250,20 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                 .title("My Location"));
 
 
+        // TODO: 2020-01-24 FOR MAP DESIGN 
+        /*try {
+            // Customise the styling of the base map using a JSON object defined
+            // in a raw resource file.
+            boolean success = googleMap.setMapStyle(
+                    MapStyleOptions.loadRawResourceStyle(
+                            this, R.raw.style_json));
+
+            if (!success) {
+                Log.e(TAG, "Style parsing failed.");
+            }
+        } catch (Resources.NotFoundException e) {
+            Log.e(TAG, "Can't find style. Error: ", e);
+        }*/
 
         mMap.setOnMyLocationButtonClickListener(new GoogleMap.OnMyLocationButtonClickListener() {
             @Override

@@ -15,6 +15,13 @@
             android:title="@string/menu_signal_road_block"/>
 
         <item
+            android:checkable="true"
+            android:checked="true"
+            android:id="@+id/nav_follow_me"
+            android:icon="@drawable/ic_menu_manage"
+            android:title="@string/str_follow_me"/>
+
+        <item
             android:id="@+id/nav_share_location"
             android:icon="@drawable/ic_menu_share"
             android:title="@string/menu_share_location" />

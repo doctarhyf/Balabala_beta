@@ -1,16 +1,11 @@
 package com.example.balabala_beta;
 
 import android.Manifest;
-import android.app.AlertDialog;
-import android.content.DialogInterface;
 import android.content.pm.PackageManager;
-import android.graphics.Color;
 
 
-import android.location.Criteria;
 import android.location.LocationManager;
 import android.os.Bundle;
-import android.os.Handler;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -29,33 +24,31 @@ import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
-import com.google.android.gms.maps.model.Circle;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
-import com.google.android.gms.maps.model.Polygon;
-import com.google.android.gms.maps.model.PolygonOptions;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.navigation.NavigationView;
 import com.google.android.material.snackbar.Snackbar;
 
-import java.util.ArrayList;
 import java.util.Timer;
 import java.util.TimerTask;
 
 public class MapsActivity extends AppCompatActivity implements OnMapReadyCallback {
 
-    private static final long LOCATION_REFRESH_TIME = 5000;
+    //private static final long LOCATION_REFRESH_TIME = 5000;
     private static final float LOCATION_REFRESH_DISTANCE = 5;
+    private static final long MS_DURATION_REFRESH_CURRENT_LOCATION = 5000;
+    private static final float MAP_DEFAULT_BLOCK_ZOOM_LEVEL = 20f;
     private GoogleMap mMap;
-    ArrayList markerPoints = new ArrayList();
-    Marker curPosMarker;
+    //ArrayList markerPoints = new ArrayList();
+    //Marker curPosMarker;
 
     private static final String TAG = "balabala";
 
     private static final LatLng RHYF = new LatLng(-11.629749, 27.488710);
-    private static final LatLng P1 = new LatLng(-11.625700, 27.485300);
-    private static final LatLng P2 = new LatLng(-11.620, 27.480);
+    //private static final LatLng P1 = new LatLng(-11.625700, 27.485300);
+    //private static final LatLng P2 = new LatLng(-11.620, 27.480);
 
 
     private AppBarConfiguration mAppBarConfiguration;
@@ -69,6 +62,8 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     String mPermission = Manifest.permission.ACCESS_FINE_LOCATION;
     private float defaultGraphicsScaleKM = 0.25f / 128f;
     private double defaultGraphicsRectScaleRectHeight = 6.0f;
+    private Marker curLocationMarker;
+    private boolean followMe = true;
 
 
     @Override
@@ -76,19 +71,6 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_maps);
 
-        try {
-            if (ActivityCompat.checkSelfPermission(this, mPermission)
-                    != PackageManager.PERMISSION_GRANTED) {
-
-                ActivityCompat.requestPermissions(this, new String[]{mPermission},
-                        REQUEST_CODE_PERMISSION);
-
-                // If any permission above not allowed by user, this condition will
-                //execute every time, else your else part will work
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
 
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
@@ -117,7 +99,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 
                 //Log.e(TAG, "*" + menuItem.getTitle() + "*" );
 
-                if(menuItem.getTitle().equals(getResources().getString(R.string.menu_choose_dest))){
+                if(menuItem.getItemId() == R.id.nav_choose_dest){
                     Log.e(TAG, "onNavigationItemSelected: Direction"  );
 
                     CameraUpdate location = CameraUpdateFactory.newLatLngZoom(
@@ -127,13 +109,24 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                 }
 
 
-                if(menuItem.getTitle().equals(getResources().getString(R.string.menu_signal_road_block))){
+                if(menuItem.getItemId() == R.id.nav_signal_road_block){
                     Log.e(TAG, "onNavigationItemSelected: -> SIgnal road block " );
                 }
 
 
-                if(menuItem.getTitle().equals(getResources().getString(R.string.menu_share_location))){
+                if(menuItem.getItemId() == R.id.nav_share_location){
                     Log.e(TAG, "onNavigationItemSelected: Share loc" );
+                }
+
+                if(menuItem.getItemId() == R.id.nav_follow_me){
+
+                    menuItem.setChecked(!menuItem.isChecked());
+                    String locked = menuItem.isChecked() ? Utils.GR_GS(MapsActivity.this, R.string.str_follow_me) : Utils.GR_GS(MapsActivity.this, R.string.str_stop_following_me);
+                    menuItem.setTitle(locked);
+
+                    followMe = menuItem.isChecked();
+
+                    Log.e(TAG, "onNavigationItemSelected: -> " + menuItem.getTitle() + ", following me : " + followMe );
                 }
 
                 drawer.closeDrawers();
@@ -156,6 +149,24 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         mapFragment.getMapAsync(this);
 
 
+        gps = new GPSTracker(MapsActivity.this);
+        try {
+            if (ActivityCompat.checkSelfPermission(this, mPermission)
+                    != PackageManager.PERMISSION_GRANTED) {
+
+                ActivityCompat.requestPermissions(this, new String[]{mPermission},
+                        REQUEST_CODE_PERMISSION);
+
+                // If any permission above not allowed by user, this condition will
+                //execute every time, else your else part will work
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+
+
+
 
         myTimer = new Timer();
         myTimer.schedule(new TimerTask() {
@@ -164,10 +175,51 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                 TimerMethod();
             }
 
-        }, 0, 10000);
+        }, 0, MS_DURATION_REFRESH_CURRENT_LOCATION);
 
 
     }
+
+    private void TimerMethod()
+    {
+        // TODO: 2020-01-23 SHOW CUR LOC TICK
+        this.runOnUiThread(getCurrentLocationNewData);
+    }
+
+    private Runnable getCurrentLocationNewData = new Runnable() {
+        public void run() {
+
+            showCurrentLocation();
+
+        }
+    };
+
+    private void showCurrentLocation() {
+
+
+        if(mMap != null && curLocationMarker != null) {
+
+            if(followMe) {
+                curLocationMarker.remove();
+                curLocationMarker = mMap.addMarker(new MarkerOptions()
+                        .position(gps.getLatLng())
+                        .title("My Location"));
+
+                CameraUpdate location = CameraUpdateFactory.newLatLngZoom(
+                        gps.getLatLng(), 20);
+                mMap.animateCamera(location);
+
+                curLocationMarker.showInfoWindow();
+
+                Toast.makeText(getApplicationContext(), "Your Location is - \nLat: "
+                        + gps.latitude + "\nLong: " + gps.longitude, Toast.LENGTH_SHORT).show();
+            }
+        }
+
+        Log.e(TAG, "showCurrentLocation: " );
+    }
+
+
 
 
 
@@ -186,124 +238,44 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 
 
         mMap = googleMap;
+        mMap.setMyLocationEnabled(true);
 
-        Circle circle1, circle2, circle3 = null;
+        curLocationMarker = mMap.addMarker(new MarkerOptions()
+                .position(gps.getLatLng())
+                .title("My Location"));
 
 
-        mMap.setOnCircleClickListener(new GoogleMap.OnCircleClickListener() {
+
+        mMap.setOnMyLocationButtonClickListener(new GoogleMap.OnMyLocationButtonClickListener() {
             @Override
-            public void onCircleClick(Circle circle) {
-                Log.e(TAG, "onCircleClick: -> id : " + circle.getId());
-
-
-                String msg1 = "Blv. M'Siri Bloque pour l'instant!";
-                String msg2 = "Av Changalele Bloque pour l'instant!";
-                String msg3 = "Rte. KASAPA Bloque pour l'instant!";
-
-
-                String curMsg = msg1;
-
-                if(circle.getId().equals("ci0")){
-                    curMsg = msg1;
-                }
-
-                if(circle.getId().equals("ci1")){
-                    curMsg = msg2;
-                }
-
-                if(circle.getId().equals("ci2")){
-                    curMsg = msg3;
-                }
+            public boolean onMyLocationButtonClick() {
 
 
 
-                AlertDialog alertDialog = new AlertDialog.Builder(MapsActivity.this).create();
-                alertDialog.setTitle("Bouchon!");
+                Log.e(TAG, "onMyLocationButtonClick: -> " + gps.getLatitude() + ", " + gps.getLongitude() );
 
-                alertDialog.setMessage(curMsg);
-                alertDialog.setButton(AlertDialog.BUTTON_NEUTRAL, "OK",
-                        new DialogInterface.OnClickListener() {
-                            public void onClick(DialogInterface dialog, int which) {
-                                dialog.dismiss();
-                            }
-                        });
-                alertDialog.show();
+
+                curLocationMarker.remove();
+                curLocationMarker = mMap.addMarker(new MarkerOptions()
+                        .position(gps.getLatLng())
+                        .title("My Location"));
+
+                CameraUpdate location = CameraUpdateFactory.newLatLngZoom(
+                        gps.getLatLng(), MAP_DEFAULT_BLOCK_ZOOM_LEVEL);
+                mMap.animateCamera(location);
+
+                curLocationMarker.showInfoWindow();
+
+
+                return false;
             }
         });
 
-        // Add a marker in Sydney and move the camera
-        /*LatLng sydney = new LatLng(-34, 151);
-        mMap.addMarker(new MarkerOptions().position(sydney).title("Marker in Sydney"));
-        mMap.moveCamera(CameraUpdateFactory.newLatLng(sydney));
-
-        mMap.addMarker(new MarkerOptions().position(RHYF).title("Docta Rhyf's Pos").visible(true));
-        mMap.moveCamera(CameraUpdateFactory.newLatLng(sydney));
-
-        mMap.addMarker(new MarkerOptions().position(P1).title("Bouchon Changalele").visible(true));
-        mMap.moveCamera(CameraUpdateFactory.newLatLng(sydney));
-
-        mMap.addMarker(new MarkerOptions().position(P2).title("Bouchon KASAPA").visible(true));
-        mMap.moveCamera(CameraUpdateFactory.newLatLng(sydney));*/
-
-
-
-        /*Polygon polygon = mMap.addPolygon(new PolygonOptions()
-                .add(new LatLng(0, 0), new LatLng(0, 5), new LatLng(5, 5), new LatLng(5, 0), new LatLng(0, 0))
-                .strokeColor(Color.RED)
-                .fillColor(Color.BLUE));*/
-
-        drawRoadBlockIntensityByLatLong(new LatLng(0,0), defaultGraphicsScaleKM, defaultGraphicsRectScaleRectHeight);
-
-        /*circle1 = mMap.addCircle(new CircleOptions()
-                .center(RHYF)
-                .radius(200)
-                .strokeColor(Color.RED)
-                .fillColor(Color.YELLOW));
-
-        circle1.setClickable(true);*/
-
-        drawRoadBlockIntensityByLatLong(RHYF, defaultGraphicsScaleKM, defaultGraphicsRectScaleRectHeight);
-
-        drawRoadBlockIntensityByLatLong(P1, defaultGraphicsScaleKM, defaultGraphicsRectScaleRectHeight);
-
-        drawRoadBlockIntensityByLatLong(P2, defaultGraphicsScaleKM, defaultGraphicsRectScaleRectHeight);
-
-       /* circle2 = mMap.addCircle(new CircleOptions()
-                .center(P1)
-                .radius(200)
-                .strokeColor(Color.GREEN)
-                .fillColor(Color.BLUE));
-
-        circle2.setClickable(true);
-
-        circle3 = mMap.addCircle(new CircleOptions()
-                .center(P2)
-                .radius(300)
-                .strokeColor(Color.BLACK)
-                .fillColor(Color.WHITE));
-
-        circle3.setClickable(true);
-*/
-
-
-
-        final LatLng coordinate = P2; //Store these lat lng values somewhere. These should be constant.
-
-
-        final Handler handler = new Handler();
-        handler.postDelayed(new Runnable() {
-            @Override
-            public void run() {
-                CameraUpdate location = CameraUpdateFactory.newLatLngZoom(
-                        coordinate, 15);
-                mMap.animateCamera(location);
-            }
-        }, 4000);
 
 
     }
 
-    private Polygon drawRoadBlockIntensityByLatLong(LatLng latLng, float scale, double rectScale){
+    /*private Polygon drawRoadBlockIntensityByLatLong(LatLng latLng, float scale, double rectScale){
 
         LatLng latLng1 = latLng;
         LatLng latLng2 = new LatLng(latLng.latitude, latLng.longitude + (scale / rectScale));
@@ -323,7 +295,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         polygon.setClickable(true);
 
         return polygon;
-    }
+    }*/
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -338,88 +310,9 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 
 
 
-    private void TimerMethod()
-    {
-        //This method is called directly by the timer
-        //and runs in the same thread as the timer.
-
-        //We call the method that will work with the UI
-        //through the runOnUiThread method.
-
-
-        this.runOnUiThread(Timer_Tick);
-    }
-
-    private Runnable Timer_Tick = new Runnable() {
-        public void run() {
-
-            //This method runs in the same thread as the UI.
-
-            //Do something to the UI thread here
-            showCurrentLocation();
-
-        }
-    };
-
-    private void showCurrentLocation() {
-
-        // create class object
-        gps = new GPSTracker(MapsActivity.this);
-
-        Criteria criteria = new Criteria();
-        criteria.setAccuracy(Criteria.ACCURACY_FINE);
-        criteria.setPowerRequirement(Criteria.POWER_HIGH);
-        criteria.setAltitudeRequired(false);
-        criteria.setSpeedRequired(false);
-        criteria.setCostAllowed(true);
-        criteria.setBearingRequired(true);
-
-        criteria.setHorizontalAccuracy(Criteria.ACCURACY_HIGH);
-        criteria.setVerticalAccuracy(Criteria.ACCURACY_HIGH);
 
 
 
-        // check if GPS enabled
-        if(gps.canGetLocation()){
-
-
-
-
-            double latitude = gps.getLatitude();
-            double longitude = gps.getLongitude();
-
-            // \n is for new line
-            Toast.makeText(getApplicationContext(), "Your Location is - \nLat: "
-                    + latitude + "\nLong: " + longitude, Toast.LENGTH_LONG).show();
-
-
-            LatLng curPos = new LatLng(latitude, longitude);
-            CameraUpdate location = CameraUpdateFactory.newLatLngZoom(
-                    curPos, 15);
-            mMap.animateCamera(location);
-
-
-            // TODO: 2020-01-19 set cur loc
-
-            if(curPosMarker != null) {
-
-                curPosMarker.remove();
-            }
-            curPosMarker = mMap.addMarker(new MarkerOptions().position(curPos).title(getResources().getString(R.string.str_ma_position)));
-            curPosMarker.showInfoWindow();
-            mMap.animateCamera(CameraUpdateFactory.newLatLng(curPos));
-
-
-
-        }else{
-            // can't get location
-            // GPS or Network is not enabled
-            // Ask user to enable GPS/network in settings
-            gps.showSettingsAlert();
-        }
-
-        Log.e(TAG, "showCurrentLocation: " );
-    }
 
 
 }

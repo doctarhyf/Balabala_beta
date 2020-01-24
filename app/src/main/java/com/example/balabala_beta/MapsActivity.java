@@ -19,6 +19,7 @@ import androidx.core.app.ActivityCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.navigation.ui.AppBarConfiguration;
 
+import com.example.balabala_beta.dummy.RoadBlocks;
 import com.google.android.gms.maps.CameraUpdate;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
@@ -197,16 +198,15 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         // TODO: 2020-01-24 to be continued ( only for testing purposes ) 
         Log.e(TAG, "signalRoadBlock: " );
 
-        //tmp
-        int markersIds[] = new int[]{R.drawable.rb_car_bike_acc,  R.drawable.rb_school,R.drawable.rd_blc_car_jam};
+
 
         Random Dice = new Random();
-        int markerId = markersIds[Dice.nextInt(markersIds.length)];
+        int roadBlockID = Dice.nextInt(RoadBlocks.NUM_ROAD_BLOCKS);
 
         MarkerOptions markerOptions = new MarkerOptions();
         markerOptions.position(gps.getLatLng())
-                .title("Road Block")
-                .icon(BitmapDescriptorFactory.fromResource(markerId))
+                .title(RoadBlocks.getRoadBlock(roadBlockID).getTitle())
+                .icon(BitmapDescriptorFactory.fromResource(RoadBlocks.getDummyRoadBlockIcon(roadBlockID)))
                 .rotation(0)
                 .draggable(false)
                 ;
@@ -214,12 +214,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         mMap.addMarker(markerOptions);
 
 
-        /*CameraUpdate location = CameraUpdateFactory.newLatLngZoom(
-                gps.getLatLng(), MAP_DEFAULT_BLOCK_ZOOM_LEVEL);
-        mMap.animateCamera(location);*/
 
-
-        //toggleFollowMe(false);
 
 
 

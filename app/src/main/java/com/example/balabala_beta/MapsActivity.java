@@ -33,6 +33,7 @@ import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.navigation.NavigationView;
 import com.google.android.material.snackbar.Snackbar;
 
+import java.util.Random;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -166,6 +167,9 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 
                 // If any permission above not allowed by user, this condition will
                 //execute every time, else your else part will work
+                Log.e(TAG, "onCreate: loc perms granted" );
+            }else{
+                Log.e(TAG, "onCreate: loc perms not granted" );
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -193,10 +197,16 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         // TODO: 2020-01-24 to be continued ( only for testing purposes ) 
         Log.e(TAG, "signalRoadBlock: " );
 
+        //tmp
+        int markersIds[] = new int[]{R.drawable.rb_car_bike_acc,  R.drawable.rb_school,R.drawable.rd_blc_car_jam};
+
+        Random Dice = new Random();
+        int markerId = markersIds[Dice.nextInt(markersIds.length)];
+
         MarkerOptions markerOptions = new MarkerOptions();
         markerOptions.position(gps.getLatLng())
                 .title("Road Block")
-                .icon(BitmapDescriptorFactory.fromResource(R.drawable.car_jam))
+                .icon(BitmapDescriptorFactory.fromResource(markerId))
                 .rotation(0)
                 .draggable(false)
                 ;
@@ -204,12 +214,12 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         mMap.addMarker(markerOptions);
 
 
-        CameraUpdate location = CameraUpdateFactory.newLatLngZoom(
+        /*CameraUpdate location = CameraUpdateFactory.newLatLngZoom(
                 gps.getLatLng(), MAP_DEFAULT_BLOCK_ZOOM_LEVEL);
-        mMap.animateCamera(location);
+        mMap.animateCamera(location);*/
 
 
-        toggleFollowMe(false);
+        //toggleFollowMe(false);
 
 
 
@@ -255,6 +265,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
             if(followMe) {
                 curLocationMarker.remove();
                 curLocationMarker = mMap.addMarker(new MarkerOptions()
+                        .icon(BitmapDescriptorFactory.fromResource(R.drawable.cur_pos_me))
                         .position(gps.getLatLng())
                         .title("My Location"));
 
@@ -262,7 +273,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                         gps.getLatLng(), 20);
                 mMap.animateCamera(location);
 
-                curLocationMarker.showInfoWindow();
+                //curLocationMarker.showInfoWindow();
 
                 Toast.makeText(getApplicationContext(), "Your Location is - \nLat: "
                         + gps.latitude + "\nLong: " + gps.longitude, Toast.LENGTH_SHORT).show();

@@ -52,7 +52,7 @@ public class GPSTracker extends Service implements LocationListener {
         try {
             locationManager = (LocationManager) mContext.getSystemService(LOCATION_SERVICE);
 
-            /*Criteria criteria = new Criteria();
+            Criteria criteria = new Criteria();
             criteria.setAccuracy(Criteria.ACCURACY_FINE);
             criteria.setPowerRequirement(Criteria.POWER_HIGH);
             criteria.setAltitudeRequired(false);
@@ -68,7 +68,9 @@ public class GPSTracker extends Service implements LocationListener {
             if (location != null) {
                 latitude = location.getLatitude();
                 longitude = location.getLongitude();
-            }*/
+            }
+
+
 
 
 
@@ -79,12 +81,16 @@ public class GPSTracker extends Service implements LocationListener {
             isNetworkEnabled = locationManager
                     .isProviderEnabled(LocationManager.NETWORK_PROVIDER);
 
-            if (!isGPSEnabled && !isNetworkEnabled) {
+            locationManager.requestLocationUpdates(MIN_TIME_BW_UPDATES, MIN_DISTANCE_CHANGE_FOR_UPDATES, criteria, this, null);
+
+            /*if (!isGPSEnabled && !isNetworkEnabled) {
                 // no network provider is enabled
             } else {
                 this.canGetLocation = true;
                 // First get location from Network Provider
                 if (isNetworkEnabled) {
+
+
                     locationManager.requestLocationUpdates(
                             LocationManager.NETWORK_PROVIDER,
                             MIN_TIME_BW_UPDATES,
@@ -125,7 +131,7 @@ public class GPSTracker extends Service implements LocationListener {
                         }
                     }
                 }
-            }
+            }*/
 
         } catch (Exception e) {
             e.printStackTrace();
@@ -215,6 +221,11 @@ public class GPSTracker extends Service implements LocationListener {
 
     @Override
     public void onLocationChanged(Location location) {
+
+        Log.e("GPS", "onLocationChanged: " );
+
+        latitude = location.getLatitude();
+        longitude = location.getLongitude();
     }
 
     @Override

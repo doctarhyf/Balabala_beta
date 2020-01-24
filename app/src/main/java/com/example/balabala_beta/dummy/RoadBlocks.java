@@ -18,7 +18,8 @@ public class RoadBlocks {
         //BitmapDescriptorFactory.fromResource(roadBlockID)
         RoadBlock roadBlockCarBikeAcc = new RoadBlock("Accident Voiture-Moto", new LatLng(0,0), "timestamp");
         RoadBlock roadBlockSchool = new RoadBlock("Ecole", new LatLng(0,0), "timestamp");
-        RoadBlock roadBlockCarJam = new RoadBlock("Car jam", new LatLng(0,0), "timestamp");
+        RoadBlock roadBlockCarJam = new RoadBlock("Embouteillage", new LatLng(0,0), "timestamp");
+        //RoadBlock roadBlockCarJam = new RoadBlock("Accident", new LatLng(0,0), "timestamp");
 
         ArrayList<RoadBlock> roadBlocks = new ArrayList<>();
 

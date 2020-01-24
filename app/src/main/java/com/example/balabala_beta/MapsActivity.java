@@ -1,6 +1,8 @@
 package com.example.balabala_beta;
 
 import android.Manifest;
+import android.content.DialogInterface;
+import android.content.pm.ActivityInfo;
 import android.content.pm.PackageManager;
 
 
@@ -14,6 +16,7 @@ import android.view.View;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.core.app.ActivityCompat;
@@ -46,6 +49,8 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     private static final float LOCATION_REFRESH_DISTANCE = 5;
     private static final long MS_DURATION_REFRESH_CURRENT_LOCATION = 5000;
     private static final float MAP_DEFAULT_BLOCK_ZOOM_LEVEL = 20f;
+    private static final int DEFAULT_ROADBLOCK_ID = 3;
+    private static final int NUM_DEF_ROAD_BLOCKS = 3;
     private GoogleMap mMap;
 
     private static final String TAG = "balabala";
@@ -68,12 +73,17 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     private Marker curLocationMarker;
     private boolean followMe = true;
     private MenuItem menutItemFollowMe = null;
+    private int selectedRoadBlock;
 
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_maps);
+
+        selectedRoadBlock = DEFAULT_ROADBLOCK_ID;
+
+        setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
 
 
         Toolbar toolbar = findViewById(R.id.toolbar);
@@ -201,19 +211,57 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         Log.e(TAG, "signalRoadBlock: " );
 
 
+        View dialogChoseRoadBlock = getLayoutInflater().inflate(R.layout.dialog_roadblock_choice, null);
+        AlertDialog alertDialog = new AlertDialog.Builder(this)
+                .setPositiveButton("Confirmer", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
 
-        Random Dice = new Random();
-        int roadBlockID = Dice.nextInt(RoadBlocks.NUM_ROAD_BLOCKS);
 
-        MarkerOptions markerOptions = new MarkerOptions();
-        markerOptions.position(gps.getLatLng())
-                .title(RoadBlocks.getRoadBlock(roadBlockID).getTitle())
-                .icon(BitmapDescriptorFactory.fromResource(RoadBlocks.getDummyRoadBlockIcon(roadBlockID)))
-                .rotation(0)
-                .draggable(false)
-                ;
 
-        mMap.addMarker(markerOptions);
+
+                        //Log.e(TAG, "onClick: envoyer" );
+
+                        //to continue
+
+                        //Random Dice = new Random();
+                        int roadBlockID = selectedRoadBlock;//which; //Dice.nextInt(RoadBlocks.NUM_ROAD_BLOCKS);
+
+                        if(roadBlockID < NUM_DEF_ROAD_BLOCKS) {
+                            MarkerOptions markerOptions = new MarkerOptions();
+                            markerOptions.position(gps.getLatLng())
+                                    .title(RoadBlocks.getRoadBlock(roadBlockID).getTitle())
+                                    .icon(BitmapDescriptorFactory.fromResource(RoadBlocks.getDummyRoadBlockIcon(roadBlockID)))
+                                    .rotation(0)
+                                    .draggable(false)
+                            ;
+
+                            mMap.addMarker(markerOptions);
+                        }else{
+                            Log.e(TAG, "onClick: -> Implement fragment for adding new roadblock type" );
+                        }
+
+                        Log.e(TAG, "onClick: -> roadBlockID : " + roadBlockID );
+
+
+                    }
+                })
+                .setNegativeButton("Annuler", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        Log.e(TAG, "onClick: annuler" );
+
+                    }
+                })
+                .create();
+        alertDialog.setTitle("Choisir type de bloquage");
+        alertDialog.setView(dialogChoseRoadBlock);
+
+
+
+        alertDialog.show();
+
+
 
 
 
@@ -396,10 +444,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     }
 
 
-
-
-
-
-
-
+    public void onRoadBlockSelected(View view) {
+        selectedRoadBlock = Integer.parseInt(view.getTag().toString());
+    }
 }

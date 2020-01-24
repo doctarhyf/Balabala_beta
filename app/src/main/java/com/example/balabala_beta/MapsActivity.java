@@ -4,6 +4,7 @@ import android.Manifest;
 import android.content.pm.PackageManager;
 
 
+import android.content.res.Resources;
 import android.location.LocationManager;
 import android.os.Bundle;
 import android.util.Log;
@@ -28,6 +29,7 @@ import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.GroundOverlayOptions;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.MapStyleOptions;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
@@ -275,7 +277,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
             }
         }
 
-        Log.e(TAG, "showCurrentLocation: " );
+        //Log.e(TAG, "showCurrentLocation: " );
     }
 
 
@@ -298,6 +300,18 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 
         mMap = googleMap;
         mMap.setMyLocationEnabled(true);
+
+        mMap.setOnMarkerClickListener(new GoogleMap.OnMarkerClickListener() {
+            @Override
+            public boolean onMarkerClick(Marker marker) {
+
+                Log.e(TAG, "onMarkerClick: -> " + marker.toString() );
+
+
+
+                return false;
+            }
+        });
 
         curLocationMarker = mMap.addMarker(new MarkerOptions()
                 .position(gps.getLatLng())

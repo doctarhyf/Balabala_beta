@@ -222,7 +222,7 @@ public class GPSTracker extends Service implements LocationListener {
     @Override
     public void onLocationChanged(Location location) {
 
-        Log.e("GPS", "onLocationChanged: " );
+        //Log.e("GPS", "onLocationChanged: " );
 
         latitude = location.getLatitude();
         longitude = location.getLongitude();

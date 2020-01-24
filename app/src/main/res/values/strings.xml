@@ -22,4 +22,6 @@
     <string name="str_stop_following_me">Follow me</string>
     <string name="str_follow_me">Stop following me</string>
     <string name="str_is_there_road_block">Y\'a t\'il un blockage?</string>
+    <string name="str_msg_stop_following_me">GPS Tracking stopped</string>
+    <string name="str_msg_start_following_me">GPS Tracking started</string>
 </resources>

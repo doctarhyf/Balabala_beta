@@ -111,6 +111,10 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         // menu should be considered as top level destinations.
 
 
+        final SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
+                .findFragmentById(R.id.map);
+        mapFragment.getMapAsync(this);
+
         navigationView.setNavigationItemSelectedListener(new NavigationView.OnNavigationItemSelectedListener() {
             @Override
             public boolean onNavigationItemSelected(@NonNull MenuItem menuItem) {
@@ -147,6 +151,13 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 
                     followMe = menuItem.isChecked();
 
+                    String followMeMsg = Utils.GR_GS(MapsActivity.this, R.string.str_msg_stop_following_me);
+
+                    if(followMe) followMeMsg = Utils.GR_GS(MapsActivity.this, R.string.str_msg_start_following_me);
+
+
+                    Snackbar.make(mapFragment.getView(), followMeMsg, Snackbar.LENGTH_LONG).show();
+
                     Log.e(TAG, "onNavigationItemSelected: -> " + menuItem.getTitle() + ", following me : " + followMe );
                 }
 
@@ -165,9 +176,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         //NavigationUI.setupWithNavController(navigationView, navController);
 
         // Obtain the SupportMapFragment and get notified when the map is ready to be used.
-        SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
-                .findFragmentById(R.id.map);
-        mapFragment.getMapAsync(this);
+
 
 
         gps = new GPSTracker(MapsActivity.this);

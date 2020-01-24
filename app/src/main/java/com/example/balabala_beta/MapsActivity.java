@@ -172,6 +172,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                 .setDrawerLayout(drawer)
                 .build();
         //NavController navController = Navigation.findNavController(this, R.id.map);
+        //NavController navController = Navigation.findNavController(this, R.id.map);
         //NavigationUI.setupActionBarWithNavController(this, navController, mAppBarConfiguration);
         //NavigationUI.setupWithNavController(navigationView, navController);
 
@@ -220,7 +221,10 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         Log.e(TAG, "signalRoadBlock: " );
 
 
-        View dialogChoseRoadBlock = getLayoutInflater().inflate(R.layout.dialog_roadblock_choice, null);
+        final View dialogViewChoseRoadBlock = getLayoutInflater().inflate(R.layout.dialog_roadblock_choice, null);
+        final View  viewDialogAddRoadBlock = getLayoutInflater().inflate(R.layout.dialog_roadblock_add_type, null);
+
+
         AlertDialog alertDialog = new AlertDialog.Builder(this)
                 .setPositiveButton("Confirmer", new DialogInterface.OnClickListener() {
                     @Override
@@ -247,7 +251,38 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 
                             mMap.addMarker(markerOptions);
                         }else{
-                            Log.e(TAG, "onClick: -> Implement fragment for adding new roadblock type" );
+                            Log.e(TAG, "onClick: -> Implement dialog for adding new roadblock type" );
+
+
+
+
+
+
+
+
+
+
+
+                            AlertDialog alertDialogCreateNewBlocRoadType = new AlertDialog.Builder(MapsActivity.this)
+                                    .setPositiveButton("Add New Cat", new DialogInterface.OnClickListener() {
+                                        @Override
+                                        public void onClick(DialogInterface dialog, int which) {
+                                            Log.e(TAG, "onClick: " );
+                                        }
+                                    })
+                                    .setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+                                        @Override
+                                        public void onClick(DialogInterface dialog, int which) {
+
+                                        }
+                                    })
+                                    .create();
+
+
+                            alertDialogCreateNewBlocRoadType.setTitle("Ajouter Nouveau type de bouchon");
+                            alertDialogCreateNewBlocRoadType.setView(viewDialogAddRoadBlock);
+                            alertDialogCreateNewBlocRoadType.show();
+
                         }
 
                         Log.e(TAG, "onClick: -> roadBlockID : " + roadBlockID );
@@ -264,7 +299,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                 })
                 .create();
         alertDialog.setTitle("Choisir type de bloquage");
-        alertDialog.setView(dialogChoseRoadBlock);
+        alertDialog.setView(dialogViewChoseRoadBlock);
 
 
 

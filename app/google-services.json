@@ -1,0 +1,40 @@
+{
+  "project_info": {
+    "project_number": "727449523769",
+    "firebase_url": "https://balabala-265309.firebaseio.com",
+    "project_id": "balabala-265309",
+    "storage_bucket": "balabala-265309.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:727449523769:android:51faa73c077a887cdf1fe8",
+        "android_client_info": {
+          "package_name": "com.example.balabala_beta"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "727449523769-lqulv8hinv7h9t6o3imgqhnrboa4ohla.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDUP4IMV0zhkGTIhgife3dfgtShbaMPQYI"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "727449523769-lqulv8hinv7h9t6o3imgqhnrboa4ohla.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

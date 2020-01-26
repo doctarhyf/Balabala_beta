@@ -2,6 +2,7 @@ package com.example.balabala_beta;
 
 import android.Manifest;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.content.pm.ActivityInfo;
 import android.content.pm.PackageManager;
 
@@ -373,8 +374,23 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     }
 
 
+    @Override
+    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
 
 
+        Log.e(TAG, "onOptionsItemSelected: -> " + item.getTitle() );
+
+        if(item.getItemId() == R.id.action_settings){
+
+            Intent intent = new Intent(MapsActivity.this, SettingsActivity.class);
+            startActivity(intent);
+
+        }
+
+        return super.onOptionsItemSelected(item);
+
+
+    }
 
     /**
      * Manipulates the map once available.
@@ -454,27 +470,20 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 
     }
 
-    /*private Polygon drawRoadBlockIntensityByLatLong(LatLng latLng, float scale, double rectScale){
+    @Override
+    protected void onPause() {
+        super.onPause();
 
-        LatLng latLng1 = latLng;
-        LatLng latLng2 = new LatLng(latLng.latitude, latLng.longitude + (scale / rectScale));
-        LatLng latLng3 = new LatLng(latLng.latitude + scale, latLng.longitude + ( scale / rectScale));
-        LatLng latLng4 = new LatLng(latLng.latitude + scale, latLng.longitude);
-        LatLng latLng5 = latLng1;
+        followMe = false;
+        Log.e(TAG, "onPause: " );
+    }
 
-        Polygon polygon = mMap.addPolygon(new PolygonOptions()
-                //.add(new LatLng(0, 0), new LatLng(0, 5), new LatLng(5, 5), new LatLng(5, 0), new LatLng(0, 0))
-                .add(latLng1, latLng2, latLng3, latLng4, latLng5)
-                .strokeColor(Color.RED)
-                .strokeWidth(5f)
-                .geodesic(true)
-                .fillColor(Color.BLUE));
-
-
-        polygon.setClickable(true);
-
-        return polygon;
-    }*/
+    @Override
+    protected void onResume() {
+        super.onResume();
+        followMe = true;
+        Log.e(TAG, "onResume: " );
+    }
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {

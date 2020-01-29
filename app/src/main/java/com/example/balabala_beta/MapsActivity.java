@@ -46,12 +46,12 @@ import java.util.TimerTask;
 
 public class MapsActivity extends AppCompatActivity implements OnMapReadyCallback {
 
-    //private static final long LOCATION_REFRESH_TIME = 5000;
-    private static final float LOCATION_REFRESH_DISTANCE = 5;
     private static final long MS_DURATION_REFRESH_CURRENT_LOCATION = 5000;
     private static final float MAP_DEFAULT_BLOCK_ZOOM_LEVEL = 20f;
     private static final int DEFAULT_ROADBLOCK_ID = 3;
     private static final int NUM_DEF_ROAD_BLOCKS = 3;
+    private static final float FOLLOW_ME_ZOOM_LEVEL = 18;
+    private boolean firstShot = true;
     private GoogleMap mMap;
 
     private static final String TAG = "balabala";
@@ -352,16 +352,30 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 
         if(mMap != null && curLocationMarker != null) {
 
-            if(followMe) {
-                curLocationMarker.remove();
-                curLocationMarker = mMap.addMarker(new MarkerOptions()
-                        .icon(BitmapDescriptorFactory.fromResource(R.drawable.cur_pos_me))
-                        .position(gps.getLatLng())
-                        .title("My Location"));
+            curLocationMarker.remove();
+            curLocationMarker = mMap.addMarker(new MarkerOptions()
+                    .icon(BitmapDescriptorFactory.fromResource(R.drawable.cur_pos_me))
+                    .position(gps.getLatLng())
+                    .title("My Location"));
 
+            if(followMe) {
+
+
+
+                // TODO: 2020-01-29 ADD Settings IN OPPO ( follow me zoom level and zoom on follow
+
+                if(firstShot) {
                 CameraUpdate location = CameraUpdateFactory.newLatLngZoom(
-                        gps.getLatLng(), 20);
+                        gps.getLatLng(), FOLLOW_ME_ZOOM_LEVEL);
                 mMap.animateCamera(location);
+                firstShot = false;
+                }else {
+                    CameraUpdate location = CameraUpdateFactory.newLatLng(
+                            gps.getLatLng());
+                    mMap.animateCamera(location);
+                }
+
+                Log.e(TAG, "showCurrentLocation: bearing : " + gps.getBearing() );
 
                 //curLocationMarker.showInfoWindow();
 

@@ -245,6 +245,18 @@ public class GPSTracker extends Service implements LocationListener {
         return null;
     }
 
+    public float getBearing(){
+        float bearing = -1;
+
+
+
+        if(location != null && location.hasBearing()){
+            bearing = location.getBearing();
+        }
+
+        return bearing;
+    }
+
     public LatLng getLatLng() {
 
 

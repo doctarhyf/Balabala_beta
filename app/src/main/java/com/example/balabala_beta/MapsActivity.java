@@ -12,6 +12,8 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.EditText;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -38,6 +40,7 @@ import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.navigation.NavigationView;
 import com.google.android.material.snackbar.Snackbar;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 
 import java.util.Random;
 import java.util.Timer;
@@ -75,11 +78,18 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     private MenuItem menutItemFollowMe = null;
     private int selectedRoadBlock;
 
+    private TextView navHeaderTitle = null;
+    private TextView nav_user = null;
+    FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+    String email = user.getEmail();
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_maps);
+
+
 
         selectedRoadBlock = DEFAULT_ROADBLOCK_ID;
 
@@ -107,8 +117,10 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         });
         final DrawerLayout drawer = findViewById(R.id.drawer_layout);
         final NavigationView navigationView = findViewById(R.id.nav_view);
-        // Passing each menu ID as a set of Ids because each
-        // menu should be considered as top level destinations.
+
+        View hView =  navigationView.getHeaderView(0);
+        nav_user = (TextView)hView.findViewById(R.id.navHeaderTitle);
+        nav_user.setText(email);
 
 
         final SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
@@ -216,6 +228,10 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
             }
 
         }, 0, MS_DURATION_REFRESH_CURRENT_LOCATION);
+
+
+
+
 
 
     }

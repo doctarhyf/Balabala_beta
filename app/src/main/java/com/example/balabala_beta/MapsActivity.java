@@ -39,6 +39,7 @@ import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.navigation.NavigationView;
 import com.google.android.material.snackbar.Snackbar;
+import com.google.firebase.auth.FirebaseAuth;
 
 import java.util.Random;
 import java.util.Timer;
@@ -160,6 +161,12 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                     Snackbar.make(mapFragment.getView(), followMeMsg, Snackbar.LENGTH_LONG).show();
 
                     Log.e(TAG, "onNavigationItemSelected: -> " + menuItem.getTitle() + ", following me : " + followMe );
+                }
+
+                if(menuItem.getItemId() == R.id.nav_logout){
+                    FirebaseAuth.getInstance().signOut();
+                    Intent I = new Intent(MapsActivity.this, ActivityLogin.class);
+                    startActivity(I);
                 }
 
                 drawer.closeDrawers();

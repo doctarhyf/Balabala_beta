@@ -1,22 +1,28 @@
 package com.example.balabala_beta;
 
 import android.Manifest;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.ActivityInfo;
 import android.content.pm.PackageManager;
 
 import android.location.LocationManager;
+import android.os.Build;
 import android.os.Bundle;
+import android.os.VibrationEffect;
+import android.os.Vibrator;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.EditText;
+import android.widget.AdapterView;
+import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
@@ -31,9 +37,7 @@ import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
-import com.google.android.gms.maps.model.GroundOverlayOptions;
 import com.google.android.gms.maps.model.LatLng;
-import com.google.android.gms.maps.model.MapStyleOptions;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
@@ -41,8 +45,13 @@ import com.google.android.material.navigation.NavigationView;
 import com.google.android.material.snackbar.Snackbar;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.ChildEventListener;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 
-import java.util.Random;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -50,7 +59,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 
     private static final long MS_DURATION_REFRESH_CURRENT_LOCATION = 5000;
     private static final float MAP_DEFAULT_BLOCK_ZOOM_LEVEL = 20f;
-    private static final int DEFAULT_ROADBLOCK_ID = 3;
+    //private static final int DEFAULT_ROADBLOCK_ID = 0;
     private static final int NUM_DEF_ROAD_BLOCKS = 3;
     private static final float FOLLOW_ME_ZOOM_LEVEL = 18;
     private boolean firstShot = true;
@@ -76,12 +85,18 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     private Marker curLocationMarker;
     private boolean followMe = true;
     private MenuItem menutItemFollowMe = null;
-    private int selectedRoadBlock;
+    //private int selectedRoadBlock;
 
     private TextView navHeaderTitle = null;
     private TextView nav_user = null;
     FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
     String email = user.getEmail();
+
+    FirebaseDatabase database = FirebaseDatabase.getInstance();
+    DatabaseReference mRefRoadblocks = database.getReference("rb");
+    private String mSelectedRoadBlockTypeKey = null;
+    private int mRoadBlockID = 0;
+    private String mRoadBlockName = null;
 
 
     @Override
@@ -90,8 +105,9 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         setContentView(R.layout.activity_maps);
 
 
+        //mRefRoadblocks.setValue("test");
 
-        selectedRoadBlock = DEFAULT_ROADBLOCK_ID;
+        //selectedRoadBlock = DEFAULT_ROADBLOCK_ID;
 
         setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
 
@@ -243,8 +259,29 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         Log.e(TAG, "signalRoadBlock: " );
 
 
+
+
         final View dialogViewChoseRoadBlock = getLayoutInflater().inflate(R.layout.dialog_roadblock_choice, null);
-        final View  viewDialogAddRoadBlock = getLayoutInflater().inflate(R.layout.dialog_roadblock_add_type, null);
+
+
+        final Spinner spinnerRoadblocTypes = dialogViewChoseRoadBlock.findViewById(R.id.spinnerRoblockTypes);
+
+        spinnerRoadblocTypes.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                //Log.e(TAG, "onItemSelected: -> " + position );
+                mSelectedRoadBlockTypeKey = RoadBlocks.getRoadBlockType(position);
+                mRoadBlockID = position;
+                mRoadBlockName = spinnerRoadblocTypes.getAdapter().getItem(position).toString();
+                //Log.e(TAG, "onItemSelected: -> " + mSelectedRoadBlockTypeKey);
+                Log.e(TAG, "onItemSelected: -> " + position );
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> parent) {
+
+            }
+        });
 
 
         AlertDialog alertDialog = new AlertDialog.Builder(this)
@@ -260,54 +297,93 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                         //to continue
 
                         //Random Dice = new Random();
-                        int roadBlockID = selectedRoadBlock;//which; //Dice.nextInt(RoadBlocks.NUM_ROAD_BLOCKS);
+                        //int roadBlockID = selectedRoadBlock;//which; //Dice.nextInt(RoadBlocks.NUM_ROAD_BLOCKS);
 
-                        if(roadBlockID < NUM_DEF_ROAD_BLOCKS) {
-                            MarkerOptions markerOptions = new MarkerOptions();
-                            markerOptions.position(gps.getLatLng())
-                                    .title(RoadBlocks.getRoadBlock(roadBlockID).getTitle())
-                                    .icon(BitmapDescriptorFactory.fromResource(RoadBlocks.getDummyRoadBlockIcon(roadBlockID)))
-                                    .rotation(0)
-                                    .draggable(false)
-                            ;
+                        if(mRoadBlockID < NUM_DEF_ROAD_BLOCKS) {
 
-                            mMap.addMarker(markerOptions);
+
+                            RoadBlocks.RoadBlock newRoadBlock = new RoadBlocks.RoadBlock(mRoadBlockName,  gps.getLatitude(), gps.getLongitude(), String.valueOf(System.currentTimeMillis()), mSelectedRoadBlockTypeKey);
+                            String keyRb = mRefRoadblocks.push().getKey();
+                            mRefRoadblocks.child(keyRb).setValue(newRoadBlock);
+
+
+
+
+
+                            mRefRoadblocks.addChildEventListener(new ChildEventListener() {
+                                @Override
+                                public void onChildAdded(@NonNull DataSnapshot dataSnapshot, @Nullable String s) {
+
+                                    Log.e(TAG, "onChildAdded: -> s : " + s );
+
+                                    /*RoadBlocks.RoadBlock roadBlock = dataSnapshot.getValue(RoadBlocks.RoadBlock.class);
+
+                                    getSupportActionBar().setTitle(roadBlock.getTitle());
+
+
+                                    Log.e(TAG, "onChildAdded: -> " + roadBlock.toString() );
+
+                                    //mMap.clear();
+
+
+                                    Log.e(TAG, "onChildAdded: -> DA RB " + roadBlock.toString() );
+
+                                    MarkerOptions markerOptions = new MarkerOptions();
+                                    markerOptions.position(roadBlock.getLatLng())
+                                            .title(RoadBlocks.getRoadBlock(mRoadBlockID).getTitle())
+                                            .icon(BitmapDescriptorFactory.fromResource(RoadBlocks.getDummyRoadBlockIcon(mRoadBlockID)))
+                                            .rotation(0)
+                                            .draggable(false)
+                                    ;
+
+                                    mMap.addMarker(markerOptions);
+
+                                    Toast.makeText(MapsActivity.this, roadBlock.toString(), Toast.LENGTH_SHORT).show();
+
+                                    Vibrator v = (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);
+// Vibrate for 500 milliseconds
+                                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                                        v.vibrate(VibrationEffect.createOneShot(500, VibrationEffect.DEFAULT_AMPLITUDE));
+                                    } else {
+                                        //deprecated in API 26
+                                        v.vibrate(500);
+                                    }*/
+
+
+
+                                }
+
+                                @Override
+                                public void onChildChanged(@NonNull DataSnapshot dataSnapshot, @Nullable String s) {
+
+                                }
+
+                                @Override
+                                public void onChildRemoved(@NonNull DataSnapshot dataSnapshot) {
+
+                                }
+
+                                @Override
+                                public void onChildMoved(@NonNull DataSnapshot dataSnapshot, @Nullable String s) {
+
+                                }
+
+                                @Override
+                                public void onCancelled(@NonNull DatabaseError databaseError) {
+
+                                }
+                            });
+
+                            //addMarkerForNewRoadBlock();
+
                         }else{
                             Log.e(TAG, "onClick: -> Implement dialog for adding new roadblock type" );
 
-
-
-
-
-
-
-
-
-
-
-                            AlertDialog alertDialogCreateNewBlocRoadType = new AlertDialog.Builder(MapsActivity.this)
-                                    .setPositiveButton("Add New Cat", new DialogInterface.OnClickListener() {
-                                        @Override
-                                        public void onClick(DialogInterface dialog, int which) {
-                                            Log.e(TAG, "onClick: " );
-                                        }
-                                    })
-                                    .setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
-                                        @Override
-                                        public void onClick(DialogInterface dialog, int which) {
-
-                                        }
-                                    })
-                                    .create();
-
-
-                            alertDialogCreateNewBlocRoadType.setTitle("Ajouter Nouveau type de bouchon");
-                            alertDialogCreateNewBlocRoadType.setView(viewDialogAddRoadBlock);
-                            alertDialogCreateNewBlocRoadType.show();
+                            showAlertAddNewRoadBlockType();
 
                         }
 
-                        Log.e(TAG, "onClick: -> roadBlockID : " + roadBlockID );
+                        Log.e(TAG, "onClick: -> roadBlockID : " + mRoadBlockID );
 
 
                     }
@@ -334,6 +410,29 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 
 
 
+    }
+
+    private void showAlertAddNewRoadBlockType() {
+        final View  viewDialogAddRoadBlock = getLayoutInflater().inflate(R.layout.dialog_roadblock_add_type, null);
+        AlertDialog alertDialogCreateNewBlocRoadType = new AlertDialog.Builder(MapsActivity.this)
+                .setPositiveButton("Add New Cat", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        Log.e(TAG, "onClick: " );
+                    }
+                })
+                .setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+
+                    }
+                })
+                .create();
+
+
+        alertDialogCreateNewBlocRoadType.setTitle("Ajouter Nouveau type de bouchon");
+        alertDialogCreateNewBlocRoadType.setView(viewDialogAddRoadBlock);
+        alertDialogCreateNewBlocRoadType.show();
     }
 
     private void toggleFollowMe(boolean followMe) {
@@ -400,8 +499,8 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 
                 //curLocationMarker.showInfoWindow();
 
-                Toast.makeText(getApplicationContext(), "Your Location is - \nLat: "
-                        + gps.latitude + "\nLong: " + gps.longitude, Toast.LENGTH_SHORT).show();
+                //Toast.makeText(getApplicationContext(), "Your Location is - \nLat: "
+                        //+ gps.latitude + "\nLong: " + gps.longitude, Toast.LENGTH_SHORT).show();
             }
         }
 
@@ -532,7 +631,4 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     }
 
 
-    public void onRoadBlockSelected(View view) {
-        selectedRoadBlock = Integer.parseInt(view.getTag().toString());
-    }
 }

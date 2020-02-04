@@ -260,9 +260,9 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     protected void onStart() {
         super.onStart();
 
-        RoadBlocks.RoadBlock newRoadBlock = new RoadBlocks.RoadBlock(mRoadBlockName,  gps.getLatitude(), gps.getLongitude(), String.valueOf(System.currentTimeMillis()), mSelectedRoadBlockTypeKey);
-        String keyRb = mRefRoadblocks.push().getKey();
-        mRefRoadblocks.child(keyRb).setValue(newRoadBlock);
+        //RoadBlocks.RoadBlock newRoadBlock = new RoadBlocks.RoadBlock(mRoadBlockName,  gps.getLatitude(), gps.getLongitude(), String.valueOf(System.currentTimeMillis()), mSelectedRoadBlockTypeKey);
+       // String keyRb = mRefRoadblocks.push().getKey();
+        //mRefRoadblocks.child(keyRb).setValue(newRoadBlock);
 
 
         mRefRoadblocks.addChildEventListener(new ChildEventListener() {

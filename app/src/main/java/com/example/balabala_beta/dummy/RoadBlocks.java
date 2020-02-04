@@ -60,11 +60,14 @@ public class RoadBlocks {
     public static class RoadBlock  {
 
 
+
         private double lat;
         private double lon;
         private String timestamp;
         private String title;
         private String roadBlockType;
+        private String key;
+        private String senderEmail;
 
         public RoadBlock(){
 
@@ -76,6 +79,15 @@ public class RoadBlocks {
             this.lon = lon;
             this.timestamp = timestamp;
             this.roadBlockType = roadBlockType;
+        }
+
+        public RoadBlock(String title, double lat, double lon, String timestamp, String roadBlockType, String senderEmail) {
+            this.title = title;
+            this.lat = lat;
+            this.lon = lon;
+            this.timestamp = timestamp;
+            this.roadBlockType = roadBlockType;
+            this.senderEmail = senderEmail;
         }
 
 
@@ -127,6 +139,23 @@ public class RoadBlocks {
         @Override
         public String toString() {
             return "Lat : " + this.lat + ", Long : " + this.lon;// + ", key : " + key;
+        }
+
+        public void setKey(String key) {
+            this.key = key;
+        }
+
+        public String getKey() {
+            return key;
+        }
+
+        public String getSenderEmail() {
+
+            return senderEmail;
+        }
+
+        public void setSenderEmail(String senderEmail) {
+            this.senderEmail = senderEmail;
         }
     }
 }

@@ -61,13 +61,18 @@ public class RoadBlocks {
     }
 
     public static int GetDummyRoadBlockIconFromFirebaseDBRBType(Context context, int roadBlockIdx){//ContextCompat contextCompat, String roadBlockType) {
-        int id = R.drawable.rb_car_bike_acc;
 
-        if(roadBlockIdx == 1){
-            id = R.drawable.rb_school;
+        int id = R.drawable.rb_insec;
+
+        if(roadBlockIdx == 1) {
+            id = R.drawable.rb_car_bike_acc;
         }
 
         if(roadBlockIdx == 2){
+            id = R.drawable.rb_school;
+        }
+
+        if(roadBlockIdx == 3){
             id = R.drawable.rd_blc_car_jam;
         }
 

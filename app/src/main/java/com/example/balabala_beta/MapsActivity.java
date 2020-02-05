@@ -367,12 +367,18 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         mRefRoadblocks.child(rbKey).setValue(newRoadBlock);
 
 
+        if(mSelectedRoadBlockIdx == 0){
+            recordInsecAudio();
+        }
 
 
 
 
 
+    }
 
+    private void recordInsecAudio() {
+        Log.e(TAG, "recordInsecAudio: -> will redocod and send audio to server" );
     }
 
     private void showAlertChoseRoadBlockType() {

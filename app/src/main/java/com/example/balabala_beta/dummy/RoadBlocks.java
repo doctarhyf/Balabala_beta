@@ -1,6 +1,7 @@
 package com.example.balabala_beta.dummy;
 
-import androidx.annotation.NonNull;
+import android.content.Context;
+import android.util.Log;
 
 import com.example.balabala_beta.R;
 import com.google.android.gms.maps.model.LatLng;
@@ -11,6 +12,8 @@ import java.util.List;
 public class RoadBlocks {
 
     public static final int NUM_ROAD_BLOCKS = 3;
+    private static final String TAG = "RB";
+
     public static  RoadBlock getRoadBlock(int roadBlockID) {
 
         //BitmapDescriptorFactory.fromResource(roadBlockID)
@@ -57,10 +60,29 @@ public class RoadBlocks {
         return roadBlocksIconsIDs[index];
     }
 
+    public static int GetDummyRoadBlockIconFromFirebaseDBRBType(Context context, int roadBlockIdx){//ContextCompat contextCompat, String roadBlockType) {
+        int id = R.drawable.rb_car_bike_acc;
+
+        if(roadBlockIdx == 1){
+            id = R.drawable.rb_school;
+        }
+
+        if(roadBlockIdx == 2){
+            id = R.drawable.rd_blc_car_jam;
+        }
+
+
+        //Log.e(TAG, "GetDummyRoadBlockIconFromFirebaseDBRBType: -> " + roadBlockType );
+
+        return id;
+    }
+
+
+
     public static class RoadBlock  {
 
 
-
+        private int roadBlockIdx;
         private double lat;
         private double lon;
         private String timestamp;
@@ -87,6 +109,15 @@ public class RoadBlocks {
             this.lon = lon;
             this.timestamp = timestamp;
             this.roadBlockType = roadBlockType;
+            this.senderEmail = senderEmail;
+        }
+
+        public RoadBlock(String title, double lat, double lon, String timestamp, int roadBlockIdx, String senderEmail) {
+            this.title = title;
+            this.lat = lat;
+            this.lon = lon;
+            this.timestamp = timestamp;
+            this.setRoadBlockIdx(roadBlockIdx);
             this.senderEmail = senderEmail;
         }
 
@@ -156,6 +187,14 @@ public class RoadBlocks {
 
         public void setSenderEmail(String senderEmail) {
             this.senderEmail = senderEmail;
+        }
+
+        public int getRoadBlockIdx() {
+            return roadBlockIdx;
+        }
+
+        public void setRoadBlockIdx(int roadBlockIdx) {
+            this.roadBlockIdx = roadBlockIdx;
         }
     }
 }

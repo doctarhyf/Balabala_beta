@@ -50,7 +50,6 @@ import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
-import com.google.firebase.database.ValueEventListener;
 
 import java.util.Timer;
 import java.util.TimerTask;
@@ -98,6 +97,8 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     private int mRoadBlockID = 0;
     private String mRoadBlockName = null;
     private Marker mCurMarker;
+    private int mSelectedRoadBlockIdx = -1;
+
 
 
     @Override
@@ -128,7 +129,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                             @Override
                             public void onClick(View v) {
 
-                                signalRoadBlock();
+                                showAlertChoseRoadBlockType();
 
                                 //Log.e(TAG, "onClick: Signaling" );
                             }
@@ -165,7 +166,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 
 
                 if(menuItem.getItemId() == R.id.nav_signal_road_block){
-                    signalRoadBlock();
+                    showAlertChoseRoadBlockType();
                 }
 
 
@@ -256,6 +257,53 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 
     }
 
+
+    private ChildEventListener mChildEventListenerNewRoadBlock = new ChildEventListener() {
+        @Override
+        public void onChildAdded(@NonNull DataSnapshot dataSnapshot, @Nullable String s) {
+
+            Log.e(TAG, "onChildAdded: -> "  + dataSnapshot.toString());
+
+            RoadBlocks.RoadBlock rb = dataSnapshot.getValue(RoadBlocks.RoadBlock.class);
+            rb.setKey(dataSnapshot.getKey());
+            Toast.makeText(MapsActivity.this, "Added new rb : " + rb.toString() + ", \nBy : " + rb.getSenderEmail() , Toast.LENGTH_LONG).show();
+
+            Vibrator v = (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);
+// Vibrate for 500 milliseconds
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                v.vibrate(VibrationEffect.createOneShot(500, VibrationEffect.DEFAULT_AMPLITUDE));
+            } else {
+                //deprecated in API 26
+                v.vibrate(500);
+            }
+
+            int rbIcon = RoadBlocks.GetDummyRoadBlockIconFromFirebaseDBRBType(MapsActivity.this, rb.getRoadBlockIdx());
+            mMap.addMarker(new MarkerOptions().icon(BitmapDescriptorFactory.fromResource(rbIcon)).position(rb.getLatLng()));
+
+
+        }
+
+        @Override
+        public void onChildChanged(@NonNull DataSnapshot dataSnapshot, @Nullable String s) {
+
+        }
+
+        @Override
+        public void onChildRemoved(@NonNull DataSnapshot dataSnapshot) {
+
+        }
+
+        @Override
+        public void onChildMoved(@NonNull DataSnapshot dataSnapshot, @Nullable String s) {
+
+        }
+
+        @Override
+        public void onCancelled(@NonNull DatabaseError databaseError) {
+
+        }
+    };
+
     @Override
     protected void onStart() {
         super.onStart();
@@ -265,75 +313,81 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         //mRefRoadblocks.child(keyRb).setValue(newRoadBlock);
 
 
-        mRefRoadblocks.addChildEventListener(new ChildEventListener() {
-            @Override
-            public void onChildAdded(@NonNull DataSnapshot dataSnapshot, @Nullable String s) {
-
-                Log.e(TAG, "onChildAdded: -> "  + dataSnapshot.toString());
-
-                RoadBlocks.RoadBlock rb = dataSnapshot.getValue(RoadBlocks.RoadBlock.class);
-                rb.setKey(dataSnapshot.getKey());
-                Toast.makeText(MapsActivity.this, "Added new rb : " + rb.toString() + ", \nBy : " + rb.getSenderEmail() , Toast.LENGTH_LONG).show();
-
-                Vibrator v = (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);
-// Vibrate for 500 milliseconds
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                    v.vibrate(VibrationEffect.createOneShot(500, VibrationEffect.DEFAULT_AMPLITUDE));
-                } else {
-                    //deprecated in API 26
-                    v.vibrate(500);
-                }
-
-                mMap.addMarker(new MarkerOptions().position(rb.getLatLng()));
-
-
-            }
-
-            @Override
-            public void onChildChanged(@NonNull DataSnapshot dataSnapshot, @Nullable String s) {
-
-            }
-
-            @Override
-            public void onChildRemoved(@NonNull DataSnapshot dataSnapshot) {
-
-            }
-
-            @Override
-            public void onChildMoved(@NonNull DataSnapshot dataSnapshot, @Nullable String s) {
-
-            }
-
-            @Override
-            public void onCancelled(@NonNull DatabaseError databaseError) {
-
-            }
-        });
+        mRefRoadblocks.addChildEventListener(mChildEventListenerNewRoadBlock);
     }
 
     @Override
     protected void onStop() {
         super.onStop();
 
+        mRefRoadblocks.removeEventListener(mChildEventListenerNewRoadBlock);
+
 
     }
+
+
 
     private void signalRoadBlock() {
 
 
 
-            Log.e(TAG, "signalRoadBlock: \uD83D\uDE21" ); //😡
-            String rbKey = mRefRoadblocks.push().getKey();
-            //mRefRoadblocks.child(rbKey).setValue("test"); //😱😹😹😹
+        Log.e(TAG, "signalRoadBlock: \uD83D\uDE21" ); //😡
+        String rbKey = mRefRoadblocks.push().getKey();
+        //mRefRoadblocks.child(rbKey).setValue("test"); //😱😹😹😹
 
-        RoadBlocks.RoadBlock newRoadBlock = new RoadBlocks.RoadBlock(mRoadBlockName,  gps.getLatitude(), gps.getLongitude(), String.valueOf(System.currentTimeMillis()), mSelectedRoadBlockTypeKey, FirebaseAuth.getInstance().getCurrentUser().getEmail());
-        //String keyRb = mRefRoadblocks.push().getKey();
+
+
+        RoadBlocks.RoadBlock newRoadBlock = new RoadBlocks.RoadBlock(mRoadBlockName,  gps.getLatitude(), gps.getLongitude(), String.valueOf(System.currentTimeMillis()), mSelectedRoadBlockIdx, FirebaseAuth.getInstance().getCurrentUser().getEmail());
         mRefRoadblocks.child(rbKey).setValue(newRoadBlock);
 
 
 
 
 
+
+
+
+    }
+
+    private void showAlertChoseRoadBlockType() {
+
+        final View  viewDialogAddRoadBlock = getLayoutInflater().inflate(R.layout.dialog_roadblock_choice, null);
+
+        final Spinner spinnerRbType = viewDialogAddRoadBlock.findViewById(R.id.spinnerRoblockTypes);
+
+        spinnerRbType.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                mSelectedRoadBlockIdx = position;
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> parent) {
+                mSelectedRoadBlockIdx = -1;
+            }
+        });
+
+        AlertDialog alertDialogCreateNewBlocRoadType = new AlertDialog.Builder(MapsActivity.this)
+                .setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        Log.e(TAG, "onClick: -> " + mSelectedRoadBlockIdx);
+                        signalRoadBlock();
+                    }
+                })
+                .setNegativeButton("Annuler", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        Log.e(TAG, "onClick: -> " );
+
+                    }
+                })
+                .create();
+
+
+        alertDialogCreateNewBlocRoadType.setTitle("Choix de type de blockage");
+        alertDialogCreateNewBlocRoadType.setView(viewDialogAddRoadBlock);
+        alertDialogCreateNewBlocRoadType.show();
 
     }
 

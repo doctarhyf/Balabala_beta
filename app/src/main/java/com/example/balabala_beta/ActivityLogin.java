@@ -40,7 +40,7 @@ public class ActivityLogin extends AppCompatActivity {
             public void onAuthStateChanged(@NonNull FirebaseAuth firebaseAuth) {
                 FirebaseUser user = firebaseAuth.getCurrentUser();
                 if (user != null) {
-                    Toast.makeText(ActivityLogin.this, "User logged in ", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(ActivityLogin.this, "User ( " + user.getEmail() + " ) logged in ", Toast.LENGTH_LONG).show();
                     Intent I = new Intent(ActivityLogin.this, MapsActivity.class);
                     startActivity(I);
                 } else {

@@ -98,7 +98,8 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     private String mRoadBlockName = null;
     private Marker mCurMarker;
     private int mSelectedRoadBlockIdx = -1;
-
+    private boolean mChoseDest = false;
+    private Marker destMarker = null;
 
 
     @Override
@@ -156,11 +157,17 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                 //Log.e(TAG, "*" + menuItem.getTitle() + "*" );
 
                 if(menuItem.getItemId() == R.id.nav_choose_dest){
-                    Log.e(TAG, "onNavigationItemSelected: Direction"  );
+                    /*Log.e(TAG, "onNavigationItemSelected: Direction"  );
 
                     CameraUpdate location = CameraUpdateFactory.newLatLngZoom(
                             RHYF, MAP_DEFAULT_BLOCK_ZOOM_LEVEL);
-                    mMap.animateCamera(location);
+                    mMap.animateCamera(location);*/
+
+                    //Log.e(TAG, "onNavigationItemSelected: -> chosing desitnation activated " );
+                    mChoseDest = true;
+                    followMe = false;
+
+                    Toast.makeText(MapsActivity.this, "Veuillez clicker sur la carte pour choisir sa destination", Toast.LENGTH_LONG).show();
 
                 }
 
@@ -250,12 +257,31 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 
         }, 0, MS_DURATION_REFRESH_CURRENT_LOCATION);
 
+        
 
 
 
 
 
     }
+
+    private GoogleMap.OnMapClickListener onMapClickListener = new GoogleMap.OnMapClickListener() {
+        @Override
+        public void onMapClick(LatLng latLng) {
+
+            if(mChoseDest){ //Will chose destination
+                Log.e(TAG, "onMapClick: -> dest : " + latLng.toString() );
+                mChoseDest = false;
+
+                mapCamGoto(latLng, FOLLOW_ME_ZOOM_LEVEL, true);
+
+
+            }else{
+                Log.e(TAG, "onMapClick: -> first activate dest" );
+            }
+
+        }
+    };
 
 
     private ChildEventListener mChildEventListenerNewRoadBlock = new ChildEventListener() {
@@ -464,9 +490,12 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                 // TODO: 2020-01-29 ADD Settings IN OPPO ( follow me zoom level and zoom on follow
 
                 if(firstShot) {
-                CameraUpdate location = CameraUpdateFactory.newLatLngZoom(
-                        gps.getLatLng(), FOLLOW_ME_ZOOM_LEVEL);
-                mMap.animateCamera(location);
+
+                    /*CameraUpdate location = CameraUpdateFactory.newLatLngZoom(
+                            gps.getLatLng(), FOLLOW_ME_ZOOM_LEVEL);
+                    mMap.animateCamera(location);*/
+                    mapCamGoto(gps.getLatLng(), FOLLOW_ME_ZOOM_LEVEL, false);
+
                 firstShot = false;
                 }else {
                     CameraUpdate location = CameraUpdateFactory.newLatLng(
@@ -484,6 +513,19 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         }
 
         //Log.e(TAG, "showCurrentLocation: " );
+    }
+
+    private void mapCamGoto(LatLng latLng, float zoomLevel, boolean addMarker) {
+
+
+        if(addMarker){
+            if( destMarker != null) destMarker.remove();
+            destMarker = mMap.addMarker(new MarkerOptions().position(latLng).title("Ma destination"));
+        }
+
+        CameraUpdate location = CameraUpdateFactory.newLatLngZoom(
+                            latLng, zoomLevel);
+                    mMap.animateCamera(location);
     }
 
 
@@ -522,11 +564,15 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         mMap = googleMap;
         mMap.setMyLocationEnabled(true);
 
+        mMap.setOnMapClickListener(onMapClickListener);
         mMap.setOnMarkerClickListener(new GoogleMap.OnMarkerClickListener() {
             @Override
             public boolean onMarkerClick(Marker marker) {
 
+                // TODO: 2020-02-05 SET MARKER CLICK EVENTS
                 Log.e(TAG, "onMarkerClick: -> " + marker.toString() );
+
+
 
 
 

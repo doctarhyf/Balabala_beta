@@ -65,7 +65,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     //private static final int DEFAULT_ROADBLOCK_ID = 0;
     private static final int NUM_DEF_ROAD_BLOCKS = 3;
     private static final float FOLLOW_ME_ZOOM_LEVEL = 18;
-    private static final int INSECURITY_AUDIO_RECORD_TIME_SEC = 10;
+    private static final int INSECURITY_AUDIO_RECORD_TIME_SEC = 15;
     private static final String LOG_TAG = "MAP_ACT";
     private boolean firstShot = true;
     private GoogleMap mMap;

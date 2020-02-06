@@ -100,7 +100,10 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     private int mSelectedRoadBlockIdx = -1;
     private boolean mChoseDest = false;
     private Marker destMarker = null;
-
+    private int RB_INDEX_INDEX_INSECURTY = 0;
+    private boolean permissionToRecordAccepted = false;
+    private String [] permissions = {Manifest.permission.RECORD_AUDIO};
+    private static final int REQUEST_RECORD_AUDIO_PERMISSION = 200;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -265,6 +268,19 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 
     }
 
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        switch (requestCode){
+            case REQUEST_RECORD_AUDIO_PERMISSION:
+                permissionToRecordAccepted  = grantResults[0] == PackageManager.PERMISSION_GRANTED;
+                break;
+        }
+        if (!permissionToRecordAccepted ) finish();
+
+    }
+
     private GoogleMap.OnMapClickListener onMapClickListener = new GoogleMap.OnMapClickListener() {
         @Override
         public void onMapClick(LatLng latLng) {
@@ -317,6 +333,8 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         @Override
         public void onChildRemoved(@NonNull DataSnapshot dataSnapshot) {
 
+            Log.e(TAG, "onChildRemoved: -> " + dataSnapshot.toString() );
+
         }
 
         @Override
@@ -358,17 +376,41 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 
 
         Log.e(TAG, "signalRoadBlock: \uD83D\uDE21" ); //😡
-        String rbKey = mRefRoadblocks.push().getKey();
+        final String rbKey = mRefRoadblocks.push().getKey();
         //mRefRoadblocks.child(rbKey).setValue("test"); //😱😹😹😹
 
 
 
-        RoadBlocks.RoadBlock newRoadBlock = new RoadBlocks.RoadBlock(mRoadBlockName,  gps.getLatitude(), gps.getLongitude(), String.valueOf(System.currentTimeMillis()), mSelectedRoadBlockIdx, FirebaseAuth.getInstance().getCurrentUser().getEmail());
-        mRefRoadblocks.child(rbKey).setValue(newRoadBlock);
+        final RoadBlocks.RoadBlock newRoadBlock = new RoadBlocks.RoadBlock(mRoadBlockName,  gps.getLatitude(), gps.getLongitude(), String.valueOf(System.currentTimeMillis()), mSelectedRoadBlockIdx, FirebaseAuth.getInstance().getCurrentUser().getEmail());
+
+        if(mSelectedRoadBlockIdx != RB_INDEX_INDEX_INSECURTY) {
+            mRefRoadblocks.child(rbKey).setValue(newRoadBlock);
+        }else{ // Insecurity option
 
 
-        if(mSelectedRoadBlockIdx == 0){
-            recordInsecAudio();
+            AlertDialog alertDialogCreateNewBlocRoadType = new AlertDialog.Builder(MapsActivity.this)
+                    .setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+
+                            mRefRoadblocks.child(rbKey).setValue(newRoadBlock);
+                            recordInsecAudio();
+                        }
+                    })
+                    .setNegativeButton("Annuler", new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+
+
+                        }
+                    })
+                    .create();
+
+
+            alertDialogCreateNewBlocRoadType.setTitle("Signal d'inscecurite?");
+            alertDialogCreateNewBlocRoadType.setMessage("Are you sure to make an insecurity awarness????");
+            alertDialogCreateNewBlocRoadType.show();
+
         }
 
 
@@ -379,6 +421,9 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 
     private void recordInsecAudio() {
         Log.e(TAG, "recordInsecAudio: -> will redocod and send audio to server" );
+
+
+
     }
 
     private void showAlertChoseRoadBlockType() {
@@ -545,6 +590,18 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 
             Intent intent = new Intent(MapsActivity.this, SettingsActivity.class);
             startActivity(intent);
+
+        }
+
+        if(item.getItemId() == R.id.action_debug_clear){
+
+
+            mRefRoadblocks.setValue(null);
+
+            if(mMap != null){
+                mMap.clear();
+            }
+
 
         }
 

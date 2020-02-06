@@ -8,8 +8,11 @@ import android.content.pm.ActivityInfo;
 import android.content.pm.PackageManager;
 
 import android.location.LocationManager;
+import android.media.MediaPlayer;
+import android.media.MediaRecorder;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.CountDownTimer;
 import android.os.VibrationEffect;
 import android.os.Vibrator;
 import android.util.Log;
@@ -51,6 +54,7 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 
+import java.io.IOException;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -61,6 +65,8 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     //private static final int DEFAULT_ROADBLOCK_ID = 0;
     private static final int NUM_DEF_ROAD_BLOCKS = 3;
     private static final float FOLLOW_ME_ZOOM_LEVEL = 18;
+    private static final int INSECURITY_AUDIO_RECORD_TIME_SEC = 10;
+    private static final String LOG_TAG = "MAP_ACT";
     private boolean firstShot = true;
     private GoogleMap mMap;
 
@@ -104,12 +110,19 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     private boolean permissionToRecordAccepted = false;
     private String [] permissions = {Manifest.permission.RECORD_AUDIO};
     private static final int REQUEST_RECORD_AUDIO_PERMISSION = 200;
+    private MediaRecorder recorder = null;
+    private MediaPlayer player = null;
+    private String fileName = null;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_maps);
 
+        ActivityCompat.requestPermissions(this, permissions, REQUEST_RECORD_AUDIO_PERMISSION);
+
+        fileName = getExternalCacheDir().getAbsolutePath();
+        fileName += "/audiorecordtest.3gp";
 
         //mRefRoadblocks.setValue("test");
 
@@ -281,6 +294,8 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 
     }
 
+
+
     private GoogleMap.OnMapClickListener onMapClickListener = new GoogleMap.OnMapClickListener() {
         @Override
         public void onMapClick(LatLng latLng) {
@@ -422,9 +437,71 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     private void recordInsecAudio() {
         Log.e(TAG, "recordInsecAudio: -> will redocod and send audio to server" );
 
+        startRecording();
+
+        launchRecordingLactch(INSECURITY_AUDIO_RECORD_TIME_SEC);
+
 
 
     }
+
+    private void startRecording() {
+        recorder = new MediaRecorder();
+        recorder.setAudioSource(MediaRecorder.AudioSource.MIC);
+        recorder.setOutputFormat(MediaRecorder.OutputFormat.THREE_GPP);
+        recorder.setOutputFile(fileName);
+        recorder.setAudioEncoder(MediaRecorder.AudioEncoder.AMR_NB);
+
+        try {
+            recorder.prepare();
+        } catch (IOException e) {
+            Log.e(LOG_TAG, "prepare() failed");
+        }
+
+        recorder.start();
+    }
+
+    private void stopRecording() {
+        recorder.stop();
+        recorder.release();
+        recorder = null;
+    }
+
+    private void launchRecordingLactch(int timeSec) {
+
+        new CountDownTimer(timeSec * 1000, 1000) {
+            public void onTick(long millisUntilFinished) {
+                Log.e(TAG, "onTick: -> Recording ... alread : " + millisUntilFinished / 1000 + " sec(s)." );
+            }
+
+            public void onFinish() {
+                stopRecording();
+
+                // TODO: 2020-02-06 play audio for debug purposes
+                //to delete later
+                playRecordedInsecurityAudioDBG();
+            }
+        }.start();
+    }
+
+    private void playRecordedInsecurityAudioDBG() {
+        player = new MediaPlayer();
+        try {
+            player.setDataSource(fileName);
+            player.prepare();
+            player.start();
+            player.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
+                @Override
+                public void onCompletion(MediaPlayer mp) {
+                    player.release();
+                    player = null;
+                }
+            });
+        } catch (IOException e) {
+            Log.e(LOG_TAG, "prepare() failed");
+        }
+    }
+
 
     private void showAlertChoseRoadBlockType() {
 

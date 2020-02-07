@@ -43,6 +43,8 @@ import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.navigation.NavigationView;
 import com.google.android.material.snackbar.Snackbar;
@@ -53,8 +55,15 @@ import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.StorageReference;
+import com.google.firebase.storage.UploadTask;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -112,7 +121,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     private static final int REQUEST_RECORD_AUDIO_PERMISSION = 200;
     private MediaRecorder recorder = null;
     private MediaPlayer player = null;
-    private String fileName = null;
+    private String insecAudioFileName = null;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -121,8 +130,8 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 
         ActivityCompat.requestPermissions(this, permissions, REQUEST_RECORD_AUDIO_PERMISSION);
 
-        fileName = getExternalCacheDir().getAbsolutePath();
-        fileName += "/audiorecordtest.3gp";
+        insecAudioFileName = getExternalCacheDir().getAbsolutePath();
+        insecAudioFileName += "/audiorecordtest.3gp";
 
         //mRefRoadblocks.setValue("test");
 
@@ -449,7 +458,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         recorder = new MediaRecorder();
         recorder.setAudioSource(MediaRecorder.AudioSource.MIC);
         recorder.setOutputFormat(MediaRecorder.OutputFormat.THREE_GPP);
-        recorder.setOutputFile(fileName);
+        recorder.setOutputFile(insecAudioFileName);
         recorder.setAudioEncoder(MediaRecorder.AudioEncoder.AMR_NB);
 
         try {
@@ -480,14 +489,52 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                 // TODO: 2020-02-06 play audio for debug purposes
                 //to delete later
                 playRecordedInsecurityAudioDBG();
+                uploadInsecurityAudioFile();
             }
         }.start();
+    }
+
+    FirebaseStorage storage = FirebaseStorage.getInstance();
+    StorageReference storageRef = storage.getReference();
+
+    // Create a reference to "mountains.jpg"
+    StorageReference insecAudioFileRef = storageRef.child(getCurrentInsecAudioFileName() );
+
+    private String getCurrentInsecAudioFileName() {
+
+        return FirebaseAuth.getInstance().getCurrentUser().getEmail() + "_" + System.currentTimeMillis();
+    }
+
+    private void uploadInsecurityAudioFile() {
+
+
+        InputStream stream = null;
+        try {
+            stream = new FileInputStream(new File(insecAudioFileName));
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        }
+
+        UploadTask uploadTask = insecAudioFileRef.putStream(stream);
+        uploadTask.addOnFailureListener(new OnFailureListener() {
+            @Override
+            public void onFailure(@NonNull Exception exception) {
+                // Handle unsuccessful uploads
+                Log.e(TAG, "onFailure: failure upload " );
+            }
+        }).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
+            @Override
+            public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
+                Log.e(TAG, "onSuccess: success upload -> " + taskSnapshot.toString() );
+            }
+        });
+
     }
 
     private void playRecordedInsecurityAudioDBG() {
         player = new MediaPlayer();
         try {
-            player.setDataSource(fileName);
+            player.setDataSource(insecAudioFileName);
             player.prepare();
             player.start();
             player.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
@@ -710,10 +757,12 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
             public boolean onMarkerClick(Marker marker) {
 
                 // TODO: 2020-02-05 SET MARKER CLICK EVENTS
-                Log.e(TAG, "onMarkerClick: -> " + marker.toString() );
+                Log.e(TAG, "onMarkerClick:  " );
 
-
-
+                Intent intent = new Intent(MapsActivity.this, ActivityMarkerDetails.class);
+                String markerTitle = String.valueOf(System.currentTimeMillis()); // new Date().toString();
+                intent.putExtra("title", markerTitle);
+                startActivity(intent);
 
 
                 return false;

@@ -74,7 +74,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     //private static final int DEFAULT_ROADBLOCK_ID = 0;
     private static final int NUM_DEF_ROAD_BLOCKS = 3;
     private static final float FOLLOW_ME_ZOOM_LEVEL = 18;
-    private static final int INSECURITY_AUDIO_RECORD_TIME_SEC = 15;
+    private static final int INSECURITY_AUDIO_RECORD_TIME_SEC = 10;
     private static final String LOG_TAG = "MAP_ACT";
     private boolean firstShot = true;
     private GoogleMap mMap;
@@ -121,7 +121,10 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     private static final int REQUEST_RECORD_AUDIO_PERMISSION = 200;
     private MediaRecorder recorder = null;
     private MediaPlayer player = null;
-    private String insecAudioFileName = null;
+    private String mInsecAudioFileName = null;
+    private String mIsInsecMarker = "false";
+    private RoadBlocks.RoadBlock mRoadBlockToAdd = null;
+    private String uploadInsecAudioFileName = null;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -130,8 +133,8 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 
         ActivityCompat.requestPermissions(this, permissions, REQUEST_RECORD_AUDIO_PERMISSION);
 
-        insecAudioFileName = getExternalCacheDir().getAbsolutePath();
-        insecAudioFileName += "/audiorecordtest.3gp";
+        mInsecAudioFileName = getExternalCacheDir().getAbsolutePath();
+        mInsecAudioFileName += "/audiorecordtest.3gp";
 
         //mRefRoadblocks.setValue("test");
 
@@ -344,7 +347,15 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
             }
 
             int rbIcon = RoadBlocks.GetDummyRoadBlockIconFromFirebaseDBRBType(MapsActivity.this, rb.getRoadBlockIdx());
-            mMap.addMarker(new MarkerOptions().icon(BitmapDescriptorFactory.fromResource(rbIcon)).position(rb.getLatLng()));
+            Marker marker = mMap.addMarker(new MarkerOptions().icon(BitmapDescriptorFactory.fromResource(rbIcon)).position(rb.getLatLng()));
+
+            FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+
+
+
+            //email_name_lat_long_ts_[insec(true_false)]
+
+            marker.setTag(user.getEmail() + "_" + user.getDisplayName() + "_" + rb.getLat() + "_" + rb.getLon() + "_" + System.currentTimeMillis() + "_" + mIsInsecMarker);
 
 
         }
@@ -393,8 +404,6 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 
     }
 
-
-
     private void signalRoadBlock() {
 
 
@@ -407,11 +416,14 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 
         final RoadBlocks.RoadBlock newRoadBlock = new RoadBlocks.RoadBlock(mRoadBlockName,  gps.getLatitude(), gps.getLongitude(), String.valueOf(System.currentTimeMillis()), mSelectedRoadBlockIdx, FirebaseAuth.getInstance().getCurrentUser().getEmail());
 
+        mRoadBlockToAdd = newRoadBlock;
+
         if(mSelectedRoadBlockIdx != RB_INDEX_INDEX_INSECURTY) {
             mRefRoadblocks.child(rbKey).setValue(newRoadBlock);
+            mIsInsecMarker = "false";
         }else{ // Insecurity option
 
-
+            mIsInsecMarker = "true";
             AlertDialog alertDialogCreateNewBlocRoadType = new AlertDialog.Builder(MapsActivity.this)
                     .setPositiveButton("OK", new DialogInterface.OnClickListener() {
                         @Override
@@ -448,17 +460,23 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 
         startRecording();
 
-        launchRecordingLactch(INSECURITY_AUDIO_RECORD_TIME_SEC);
+        launchRecordingLatch(INSECURITY_AUDIO_RECORD_TIME_SEC);
 
 
 
     }
 
     private void startRecording() {
+
+
+        //String str = user.getEmail() + "_" + user.getDisplayName() + "_" + mRoadBlockToAdd.getLat() + "_" + mRoadBlockToAdd.getLon() + "_" + System.currentTimeMillis() + "_" + mIsInsecMarker;
+
+        //Log.e(TAG, "startRecording: \uD83D\uDE21 : fname -> " + str );
+
         recorder = new MediaRecorder();
         recorder.setAudioSource(MediaRecorder.AudioSource.MIC);
         recorder.setOutputFormat(MediaRecorder.OutputFormat.THREE_GPP);
-        recorder.setOutputFile(insecAudioFileName);
+        recorder.setOutputFile(mInsecAudioFileName);
         recorder.setAudioEncoder(MediaRecorder.AudioEncoder.AMR_NB);
 
         try {
@@ -476,11 +494,13 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         recorder = null;
     }
 
-    private void launchRecordingLactch(int timeSec) {
+    private void launchRecordingLatch(int timeSec) {
 
         new CountDownTimer(timeSec * 1000, 1000) {
             public void onTick(long millisUntilFinished) {
-                Log.e(TAG, "onTick: -> Recording ... alread : " + millisUntilFinished / 1000 + " sec(s)." );
+                Log.e(TAG, "onTick: -> Recording ... already : " + millisUntilFinished / 1000 + " sec(s)." );
+                uploadInsecAudioFileName = user.getEmail() + "_"  + mRoadBlockToAdd.getLat() + "_" + mRoadBlockToAdd.getLon() + "_" + System.currentTimeMillis() + "_" + mIsInsecMarker;
+
             }
 
             public void onFinish() {
@@ -502,15 +522,18 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 
     private String getCurrentInsecAudioFileName() {
 
+        // TODO: 2020-02-08 TO CONTINUE 
         return FirebaseAuth.getInstance().getCurrentUser().getEmail() + "_" + System.currentTimeMillis();
+        //return user.getEmail() + "_" + user.getDisplayName() + "_" + mRoadBlockToAdd.getLat() + "_" + mRoadBlockToAdd.getLon() + "_" + System.currentTimeMillis() + "_" + mIsInsecMarker;
     }
 
     private void uploadInsecurityAudioFile() {
 
 
+        insecAudioFileRef = storageRef.child("insec_audio/" + uploadInsecAudioFileName);
         InputStream stream = null;
         try {
-            stream = new FileInputStream(new File(insecAudioFileName));
+            stream = new FileInputStream(new File(mInsecAudioFileName));
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         }
@@ -534,7 +557,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     private void playRecordedInsecurityAudioDBG() {
         player = new MediaPlayer();
         try {
-            player.setDataSource(insecAudioFileName);
+            player.setDataSource(mInsecAudioFileName);
             player.prepare();
             player.start();
             player.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
@@ -702,8 +725,6 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                             latLng, zoomLevel);
                     mMap.animateCamera(location);
     }
-
-
     @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
 
@@ -756,12 +777,15 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
             @Override
             public boolean onMarkerClick(Marker marker) {
 
-                // TODO: 2020-02-05 SET MARKER CLICK EVENTS
-                Log.e(TAG, "onMarkerClick:  " );
+
 
                 Intent intent = new Intent(MapsActivity.this, ActivityMarkerDetails.class);
                 String markerTitle = String.valueOf(System.currentTimeMillis()); // new Date().toString();
-                intent.putExtra("title", markerTitle);
+
+                intent.putExtra("tag", marker.getTag().toString());
+
+                // TODO: 2020-02-08 should check new activity jump logic
+
                 startActivity(intent);
 
 
@@ -845,4 +869,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     }
 
 
+    public void replayInsecAudio(View view) {
+        Log.e(TAG, "replayInsecAudio: " );
+    }
 }

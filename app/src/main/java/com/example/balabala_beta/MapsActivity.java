@@ -357,7 +357,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 
             //email_name_lat_long_ts_[insec(true_false)]
 
-            marker.setTag("my file");//user.getEmail() + "_" + user.getDisplayName() + "_" + rb.getLat() + "_" + rb.getLon() + "_" + System.currentTimeMillis() + "_" + mIsInsecMarker);
+            marker.setTag(dataSnapshot.getKey());//user.getEmail() + "_" + user.getDisplayName() + "_" + rb.getLat() + "_" + rb.getLon() + "_" + System.currentTimeMillis() + "_" + mIsInsecMarker);
 
 
         }

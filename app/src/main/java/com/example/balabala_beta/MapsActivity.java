@@ -124,7 +124,8 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     private String mInsecAudioFileName = null;
     private String mIsInsecMarker = "false";
     private RoadBlocks.RoadBlock mRoadBlockToAdd = null;
-    private String uploadInsecAudioFileName = null;
+    //private String uploadInsecAudioFileName = null;
+    private String mRbKey = null;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -348,6 +349,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 
             int rbIcon = RoadBlocks.GetDummyRoadBlockIconFromFirebaseDBRBType(MapsActivity.this, rb.getRoadBlockIdx());
             Marker marker = mMap.addMarker(new MarkerOptions().icon(BitmapDescriptorFactory.fromResource(rbIcon)).position(rb.getLatLng()));
+            //marker.setTag("DA TEST TAG");
 
             FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
 
@@ -355,7 +357,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 
             //email_name_lat_long_ts_[insec(true_false)]
 
-            marker.setTag(user.getEmail() + "_" + user.getDisplayName() + "_" + rb.getLat() + "_" + rb.getLon() + "_" + System.currentTimeMillis() + "_" + mIsInsecMarker);
+            marker.setTag("my file");//user.getEmail() + "_" + user.getDisplayName() + "_" + rb.getLat() + "_" + rb.getLon() + "_" + System.currentTimeMillis() + "_" + mIsInsecMarker);
 
 
         }
@@ -409,8 +411,8 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 
 
         Log.e(TAG, "signalRoadBlock: \uD83D\uDE21" ); //😡
-        final String rbKey = mRefRoadblocks.push().getKey();
-        //mRefRoadblocks.child(rbKey).setValue("test"); //😱😹😹😹
+        mRbKey = mRefRoadblocks.push().getKey();
+        //mRefRoadblocks.child(mRbKey).setValue("test"); //😱😹😹😹
 
 
 
@@ -419,7 +421,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         mRoadBlockToAdd = newRoadBlock;
 
         if(mSelectedRoadBlockIdx != RB_INDEX_INDEX_INSECURTY) {
-            mRefRoadblocks.child(rbKey).setValue(newRoadBlock);
+            mRefRoadblocks.child(mRbKey).setValue(newRoadBlock);
             mIsInsecMarker = "false";
         }else{ // Insecurity option
 
@@ -429,7 +431,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                         @Override
                         public void onClick(DialogInterface dialog, int which) {
 
-                            mRefRoadblocks.child(rbKey).setValue(newRoadBlock);
+                            mRefRoadblocks.child(mRbKey).setValue(newRoadBlock);
                             recordInsecAudio();
                         }
                     })
@@ -499,7 +501,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         new CountDownTimer(timeSec * 1000, 1000) {
             public void onTick(long millisUntilFinished) {
                 Log.e(TAG, "onTick: -> Recording ... already : " + millisUntilFinished / 1000 + " sec(s)." );
-                uploadInsecAudioFileName = user.getEmail() + "_"  + mRoadBlockToAdd.getLat() + "_" + mRoadBlockToAdd.getLon() + "_" + System.currentTimeMillis() + "_" + mIsInsecMarker;
+                //uploadInsecAudioFileName = user.getEmail() + "_"  + mRoadBlockToAdd.getLat() + "_" + mRoadBlockToAdd.getLon() + "_" + System.currentTimeMillis() + "_" + mIsInsecMarker;
 
             }
 
@@ -530,7 +532,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     private void uploadInsecurityAudioFile() {
 
 
-        insecAudioFileRef = storageRef.child("insec_audio/" + uploadInsecAudioFileName);
+        insecAudioFileRef = storageRef.child("insec_audio/" + mRbKey);
         InputStream stream = null;
         try {
             stream = new FileInputStream(new File(mInsecAudioFileName));
@@ -681,6 +683,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                     .position(gps.getLatLng())
                     .title("My Location"));
 
+
             if(followMe) {
 
 
@@ -742,6 +745,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 
 
             mRefRoadblocks.setValue(null);
+            storageRef.child("insec_audio").delete();
 
             if(mMap != null){
                 mMap.clear();

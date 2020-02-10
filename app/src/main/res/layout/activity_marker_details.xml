@@ -37,8 +37,8 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"/>
     <Button
-        android:onClick="replayInsecAudio"
-        android:id="@+id/btnPlayAudio"
+
+        android:id="@+id/btnRePlayInsecAudio"
         android:text="Relay Audio"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"/>

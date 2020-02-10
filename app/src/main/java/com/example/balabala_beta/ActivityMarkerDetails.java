@@ -5,9 +5,10 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 
 import android.media.MediaPlayer;
-import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.View;
+import android.widget.Button;
 
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
@@ -26,6 +27,7 @@ public class ActivityMarkerDetails extends AppCompatActivity {
     private MediaPlayer player = null;
     private String mInsecAudioFileName = null;
     private File mLocalFile = null;
+    Button btnRePlayInsecAudio = null;
 
 
     @Override
@@ -36,6 +38,14 @@ public class ActivityMarkerDetails extends AppCompatActivity {
         Toolbar toolbar = findViewById(R.id.toolbarMarkerDetails);
         setSupportActionBar(toolbar);
 
+
+        btnRePlayInsecAudio = findViewById(R.id.btnRePlayInsecAudio);
+        btnRePlayInsecAudio.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                playInsecAudio();
+            }
+        });
 
 
         mInsecAudioFileName = getIntent().getExtras().getString("tag");
@@ -71,12 +81,19 @@ public class ActivityMarkerDetails extends AppCompatActivity {
 
     }
 
+
+
     private void playInsecAudio() {
+        if(player != null){
+            player.stop();
+            player.release();
+            player = null;
+        }
         player = new MediaPlayer();
         try {
 
 
-            String file = this.getCacheDir() + mLocalFile.toString();
+            String file = mLocalFile.getAbsolutePath();
 
             Log.e(TAG, "playInsecAudio: file -> " + file );
             player.setDataSource(file);//(mLocalFile);

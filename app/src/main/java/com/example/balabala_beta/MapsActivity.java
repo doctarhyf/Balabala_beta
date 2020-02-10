@@ -491,9 +491,11 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     }
 
     private void stopRecording() {
-        recorder.stop();
-        recorder.release();
-        recorder = null;
+        if(recorder != null) {
+            recorder.stop();
+            recorder.release();
+            recorder = null;
+        }
     }
 
     private void launchRecordingLatch(int timeSec) {
@@ -510,7 +512,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 
                 // TODO: 2020-02-06 play audio for debug purposes
                 //to delete later
-                playRecordedInsecurityAudioDBG();
+                //playRecordedInsecurityAudioDBG();
                 uploadInsecurityAudioFile();
             }
         }.start();
@@ -786,11 +788,13 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                 Intent intent = new Intent(MapsActivity.this, ActivityMarkerDetails.class);
                 String markerTitle = String.valueOf(System.currentTimeMillis()); // new Date().toString();
 
-                intent.putExtra("tag", marker.getTag().toString());
+                if(marker.getTag() != null) {
+                    intent.putExtra("tag", marker.getTag().toString());
 
-                // TODO: 2020-02-08 should check new activity jump logic
+                    // TODO: 2020-02-08 should check new activity jump logic
 
-                startActivity(intent);
+                    startActivity(intent);
+                }
 
 
                 return false;

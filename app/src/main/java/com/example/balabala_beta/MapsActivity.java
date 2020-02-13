@@ -126,6 +126,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     private RoadBlocks.RoadBlock mRoadBlockToAdd = null;
     //private String uploadInsecAudioFileName = null;
     private String mRbKey = null;
+    private String mNewRbType = "new_rb_type";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -347,7 +348,8 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                 v.vibrate(500);
             }
 
-            int rbIcon = RoadBlocks.GetDummyRoadBlockIconFromFirebaseDBRBType(MapsActivity.this, rb.getRoadBlockIdx());
+            //// TODO: 2020-02-13 REMAKE DATABASE RB IDS
+            int rbIcon = R.drawable.rb_insec;RoadBlocks.GetDummyRoadBlockIconFromFirebaseDBRBType(MapsActivity.this, rb.getRoadBlockIdx());
             Marker marker = mMap.addMarker(new MarkerOptions().icon(BitmapDescriptorFactory.fromResource(rbIcon)).position(rb.getLatLng()));
             //marker.setTag("DA TEST TAG");
 
@@ -416,7 +418,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 
 
 
-        final RoadBlocks.RoadBlock newRoadBlock = new RoadBlocks.RoadBlock(mRoadBlockName,  gps.getLatitude(), gps.getLongitude(), String.valueOf(System.currentTimeMillis()), mSelectedRoadBlockIdx, FirebaseAuth.getInstance().getCurrentUser().getEmail());
+        final RoadBlocks.RoadBlock newRoadBlock = new RoadBlocks.RoadBlock(mRoadBlockName,  gps.getLatitude(), gps.getLongitude(), String.valueOf(System.currentTimeMillis()),  mNewRbType, FirebaseAuth.getInstance().getCurrentUser().getEmail());
 
         mRoadBlockToAdd = newRoadBlock;
 

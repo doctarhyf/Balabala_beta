@@ -117,14 +117,8 @@ public class RoadBlocks {
             this.senderEmail = senderEmail;
         }
 
-        public RoadBlock(String title, double lat, double lon, String timestamp, int roadBlockIdx, String senderEmail) {
-            this.title = title;
-            this.lat = lat;
-            this.lon = lon;
-            this.timestamp = timestamp;
-            this.setRoadBlockIdx(roadBlockIdx);
-            this.senderEmail = senderEmail;
-        }
+
+
 
 
         public double getLat() {

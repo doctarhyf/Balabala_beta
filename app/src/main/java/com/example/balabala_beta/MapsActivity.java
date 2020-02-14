@@ -520,6 +520,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         new CountDownTimer(timeSec * 1000, 1000) {
             public void onTick(long millisUntilFinished) {
                 Log.e(TAG, "onTick: -> Recording ... already : " + millisUntilFinished / 1000 + " sec(s)." );
+                //deleted
                 //uploadInsecAudioFileName = user.getEmail() + "_"  + mRoadBlockToAdd.getLat() + "_" + mRoadBlockToAdd.getLon() + "_" + System.currentTimeMillis() + "_" + mIsInsecMarker;
 
             }

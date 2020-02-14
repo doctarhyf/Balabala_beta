@@ -772,7 +772,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 
 
             mRefRoadblocks.setValue(null);
-            storageRef.child("insec_audio").delete();
+            storageRef.child("insec_audio/").delete();
 
             if(mMap != null){
                 mMap.clear();

@@ -412,14 +412,17 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 
 
 
-        Log.e(TAG, "signalRoadBlock: \uD83D\uDE21" ); //😡
+        //Log.e(TAG, "signalRoadBlock: \uD83D\uDE21" ); //😡
+
+
         mRbKey = mRefRoadblocks.push().getKey();
-        //mRefRoadblocks.child(mRbKey).setValue("test"); //😱😹😹😹
+//mRefRoadblocks.child(mRbKey).setValue("test"); //😱😹😹😹
 
 
 
         final RoadBlocks.RoadBlock newRoadBlock = new RoadBlocks.RoadBlock(mRoadBlockName,  gps.getLatitude(), gps.getLongitude(), String.valueOf(System.currentTimeMillis()),  mNewRbType, FirebaseAuth.getInstance().getCurrentUser().getEmail());
 
+        //Log.e(TAG, "signalRoadBlock: WHAAT" );
         mRoadBlockToAdd = newRoadBlock;
 
         if(mSelectedRoadBlockIdx != RB_INDEX_INDEX_INSECURTY) {
@@ -427,13 +430,20 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
             mIsInsecMarker = "false";
         }else{ // Insecurity option
 
+            //Log.e(TAG, "signalRoadBlock: hum" );
             mIsInsecMarker = "true";
+
+
+
+
             AlertDialog alertDialogCreateNewBlocRoadType = new AlertDialog.Builder(MapsActivity.this)
                     .setPositiveButton("OK", new DialogInterface.OnClickListener() {
                         @Override
                         public void onClick(DialogInterface dialog, int which) {
 
-                            mRefRoadblocks.child(mRbKey).setValue(newRoadBlock);
+                            Log.e(TAG, "signalRoadBlock: OKA"  );
+
+                            //mRefRoadblocks.child(mRbKey).setValue(mRoadBlockToAdd);
                             recordInsecAudio();
                         }
                     })
@@ -451,7 +461,12 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
             alertDialogCreateNewBlocRoadType.setMessage("Are you sure to make an insecurity awarness????");
             alertDialogCreateNewBlocRoadType.show();
 
+
+
+
         }
+
+
 
 
 
@@ -515,9 +530,15 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                 // TODO: 2020-02-06 play audio for debug purposes
                 //to delete later
                 //playRecordedInsecurityAudioDBG();
+                addInsecTag();
                 uploadInsecurityAudioFile();
+                mRefRoadblocks.child(mRbKey).setValue(mRoadBlockToAdd);
             }
         }.start();
+    }
+
+    private void addInsecTag() {
+        Log.e(TAG, "addInsecTag: " );
     }
 
     FirebaseStorage storage = FirebaseStorage.getInstance();
@@ -603,6 +624,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                     public void onClick(DialogInterface dialog, int which) {
                         Log.e(TAG, "onClick: -> " + mSelectedRoadBlockIdx);
                         signalRoadBlock();
+                        //Log.e(TAG, "FAKYALL" );
                     }
                 })
                 .setNegativeButton("Annuler", new DialogInterface.OnClickListener() {
@@ -882,4 +904,5 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     public void replayInsecAudio(View view) {
         Log.e(TAG, "replayInsecAudio: " );
     }
+
 }

@@ -42,6 +42,7 @@ public class ActivityMarkerDetails extends AppCompatActivity {
     private int mInsecAudioTotalDuration = 0;
     TextView tvLoadAudioFromServerMessage = null;
     private boolean insecAudioLoaded = false;
+    private String mInsecAudioFileSenderEmail = "no_email";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -55,7 +56,7 @@ public class ActivityMarkerDetails extends AppCompatActivity {
         tvUser = findViewById(R.id.textViewUser);
         tvDateTime = findViewById(R.id.textViewDateTime);
 
-        tvUser.setText("Signale par : " + user.getEmail());
+
 
 
         progress = findViewById(R.id.pbInsecAudio);
@@ -73,7 +74,12 @@ public class ActivityMarkerDetails extends AppCompatActivity {
         });
 
 
-        mInsecAudioFileName = getIntent().getExtras().getString("tag");
+        String[] tag = getIntent().getExtras().getString("tag").split("\uD83D\uDE21");
+        mInsecAudioFileName = tag[0];
+        mInsecAudioFileSenderEmail = tag[1];
+        tvUser.setText("Signale par : " + mInsecAudioFileSenderEmail);
+
+        //Log.e(TAG, "onCreate: DA CHAK : -> " + mInsecAudioFileName);
 
         getSupportActionBar().setTitle(mInsecAudioFileName);
 

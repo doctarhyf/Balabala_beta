@@ -58,6 +58,7 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
+import com.google.gson.Gson;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -353,7 +354,15 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 
             //email_name_lat_long_ts_[insec(true_false)]
 
-            marker.setTag(dataSnapshot.getKey());//user.getEmail() + "_" + user.getDisplayName() + "_" + rb.getLat() + "_" + rb.getLon() + "_" + System.currentTimeMillis() + "_" + mIsInsecMarker);
+            //Log.e(TAG, "onChildAdded: DA SNAPYYY : " + dataSnapshot + ", value : " + dataSnapshot.getValue().toString());
+            Gson gson = new Gson();
+            RoadBlocks.RoadBlock rbInfo = gson.fromJson(dataSnapshot.getValue().toString(), RoadBlocks.RoadBlock.class);
+
+            //Log.e(TAG, "onChildAdded: DA SNAPYYY : " + test.getSenderEmail() );
+
+            // todo marker data foudnd
+
+            marker.setTag(dataSnapshot.getKey() + "\uD83D\uDE21" + rbInfo.getSenderEmail() );//user.getEmail() + "_" + user.getDisplayName() + "_" + rb.getLat() + "_" + rb.getLon() + "_" + System.currentTimeMillis() + "_" + mIsInsecMarker);
 
 
         }
@@ -366,7 +375,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         @Override
         public void onChildRemoved(@NonNull DataSnapshot dataSnapshot) {
 
-            Log.e(TAG, "onChildRemoved: -> " + dataSnapshot.toString() );
+            Log.e(TAG, "onChildRemoved: -> ON C REM" + dataSnapshot.toString() );
             mMap.clear();
             vibrate();
 

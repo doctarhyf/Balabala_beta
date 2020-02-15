@@ -127,6 +127,8 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     //private String uploadInsecAudioFileName = null;
     private String mRbKey = null;
     private String mNewRbType = "new_rb_type";
+    FirebaseStorage storage = FirebaseStorage.getInstance();
+    StorageReference storageRef = storage.getReference();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -542,8 +544,8 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         Log.e(TAG, "addInsecTag: " );
     }
 
-    FirebaseStorage storage = FirebaseStorage.getInstance();
-    StorageReference storageRef = storage.getReference();
+    //FirebaseStorage storage = FirebaseStorage.getInstance();
+    //StorageReference storageRef = storage.getReference();
 
     // Create a reference to "mountains.jpg"
     StorageReference insecAudioFileRef = storageRef.child(getCurrentInsecAudioFileName() );

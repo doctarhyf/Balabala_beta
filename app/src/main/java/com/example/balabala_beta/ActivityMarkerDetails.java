@@ -5,10 +5,12 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 
 import android.media.MediaPlayer;
+import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
+import android.widget.ProgressBar;
 
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
@@ -18,6 +20,7 @@ import com.google.firebase.storage.StorageReference;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 public class ActivityMarkerDetails extends AppCompatActivity {
 
@@ -28,12 +31,15 @@ public class ActivityMarkerDetails extends AppCompatActivity {
     private String mInsecAudioFileName = null;
     private File mLocalFile = null;
     Button btnRePlayInsecAudio = null;
+    ProgressBar progress = null;
 
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_marker_details);
+
+        progress = findViewById(R.id.pbInsecAudio);
 
         Toolbar toolbar = findViewById(R.id.toolbarMarkerDetails);
         setSupportActionBar(toolbar);
@@ -79,6 +85,8 @@ public class ActivityMarkerDetails extends AppCompatActivity {
             }
         });
 
+
+
     }
 
 
@@ -98,16 +106,61 @@ public class ActivityMarkerDetails extends AppCompatActivity {
             Log.e(TAG, "playInsecAudio: file -> " + file );
             player.setDataSource(file);//(mLocalFile);
             player.prepare();
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                progress.setMin(0);
+            }
+            progress.setMax(player.getDuration());
             player.start();
             player.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
                 @Override
                 public void onCompletion(MediaPlayer mp) {
                     player.release();
                     player = null;
+                    observer.stop();
+                    progress.setProgress(player.getCurrentPosition());
                 }
             });
+
+            observer = new MediaObserver();
+            //mediaPlayer.start();
+            new Thread(observer).start();
         } catch (IOException e) {
             Log.e(TAG, "prepare() failed");
         }
     }
+
+    private class MediaObserver implements Runnable {
+        private AtomicBoolean stop = new AtomicBoolean(false);
+
+        public void stop() {
+            stop.set(true);
+        }
+
+        @Override
+        public void run() {
+            while (!stop.get()) {
+                progress.setProgress(player.getCurrentPosition());
+                try {
+                    Thread.sleep(200);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+    }
+
+    private MediaObserver observer = null;
+
+    /*public void runMedia() {
+        mediaPlayer.setOnCompletionListener(new MediaPlayer.OnCompletionListener{
+            @Override
+            public void onCompletion(MediaPlayer mPlayer) {
+                observer.stop();
+                progress.setProgress(mPlayer.getCurrentPosition());
+            }
+        });
+        observer = new MediaObserver();
+        mediaPlayer.start();
+        new Thread(observer).start();
+    }*/
 }

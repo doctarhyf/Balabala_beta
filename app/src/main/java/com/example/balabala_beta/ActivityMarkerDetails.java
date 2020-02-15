@@ -114,10 +114,11 @@ public class ActivityMarkerDetails extends AppCompatActivity {
             player.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
                 @Override
                 public void onCompletion(MediaPlayer mp) {
+                    progress.setProgress(player.getCurrentPosition());
                     player.release();
                     player = null;
                     observer.stop();
-                    progress.setProgress(player.getCurrentPosition());
+
                 }
             });
 
@@ -139,9 +140,11 @@ public class ActivityMarkerDetails extends AppCompatActivity {
         @Override
         public void run() {
             while (!stop.get()) {
+
+
                 progress.setProgress(player.getCurrentPosition());
                 try {
-                    Thread.sleep(200);
+                    Thread.sleep(50);
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 }
@@ -151,16 +154,5 @@ public class ActivityMarkerDetails extends AppCompatActivity {
 
     private MediaObserver observer = null;
 
-    /*public void runMedia() {
-        mediaPlayer.setOnCompletionListener(new MediaPlayer.OnCompletionListener{
-            @Override
-            public void onCompletion(MediaPlayer mPlayer) {
-                observer.stop();
-                progress.setProgress(mPlayer.getCurrentPosition());
-            }
-        });
-        observer = new MediaObserver();
-        mediaPlayer.start();
-        new Thread(observer).start();
-    }*/
+
 }

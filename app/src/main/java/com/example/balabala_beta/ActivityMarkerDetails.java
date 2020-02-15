@@ -81,7 +81,7 @@ public class ActivityMarkerDetails extends AppCompatActivity {
 
         //Log.e(TAG, "onCreate: DA CHAK : -> " + mInsecAudioFileName);
 
-        getSupportActionBar().setTitle(mInsecAudioFileName);
+        getSupportActionBar().setTitle("Audio de : " + mInsecAudioFileSenderEmail);
 
 
         Log.e(TAG, "onCreate: -> da ref : " + "insec_audio/" + mInsecAudioFileName );

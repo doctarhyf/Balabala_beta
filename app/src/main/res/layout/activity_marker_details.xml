@@ -32,7 +32,7 @@
         android:id="@+id/textViewDateTime"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Heure et date : ** heure n date **"/>
+        android:text="Date et heure : " />
 
     <ProgressBar
 
@@ -42,7 +42,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:max="100"
-        android:progress="38" />
+        android:progress="0" />
     <Button
 
         android:id="@+id/btnRePlayInsecAudio"

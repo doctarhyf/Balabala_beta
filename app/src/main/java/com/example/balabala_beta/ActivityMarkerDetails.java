@@ -11,11 +11,15 @@ import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ProgressBar;
+import android.widget.TextView;
 
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.storage.FileDownloadTask;
 import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.StorageMetadata;
 import com.google.firebase.storage.StorageReference;
 
 import java.io.File;
@@ -32,12 +36,23 @@ public class ActivityMarkerDetails extends AppCompatActivity {
     private File mLocalFile = null;
     Button btnRePlayInsecAudio = null;
     ProgressBar progress = null;
-
+    FirebaseUser user;
+    TextView tvUser = null;
+    TextView tvDateTime = null;
+    private int mInsecAudioTotalDuration = 0;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_marker_details);
+
+        user = FirebaseAuth.getInstance().getCurrentUser();
+
+        tvUser = findViewById(R.id.textViewUser);
+        tvDateTime = findViewById(R.id.textViewDateTime);
+
+        tvUser.setText("Signale par : " + user.getEmail());
+
 
         progress = findViewById(R.id.pbInsecAudio);
 
@@ -70,11 +85,20 @@ public class ActivityMarkerDetails extends AppCompatActivity {
             e.printStackTrace();
         }
 
+        insecAudioRef.getMetadata().addOnSuccessListener(new OnSuccessListener<StorageMetadata>() {
+            @Override
+            public void onSuccess(StorageMetadata storageMetadata) {
+                // Metadata now contains the metadata for 'images/forest.jpg'
+                tvDateTime.setText("Date et heure : " + Utils.FormatMillisToDateTime(storageMetadata.getCreationTimeMillis(), null));
+            }
+        });
+
         insecAudioRef.getFile(mLocalFile).addOnSuccessListener(new OnSuccessListener<FileDownloadTask.TaskSnapshot>() {
             @Override
             public void onSuccess(FileDownloadTask.TaskSnapshot taskSnapshot) {
                 // Local temp file has been created
                 Log.e(TAG, "onSuccess: -> downloaded : " + mInsecAudioFileName );
+
                 playInsecAudio();
             }
         }).addOnFailureListener(new OnFailureListener() {
@@ -109,15 +133,18 @@ public class ActivityMarkerDetails extends AppCompatActivity {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                 progress.setMin(0);
             }
-            progress.setMax(player.getDuration());
+
+            mInsecAudioTotalDuration = player.getDuration();
+            progress.setMax(mInsecAudioTotalDuration);
             player.start();
             player.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
                 @Override
                 public void onCompletion(MediaPlayer mp) {
-                    progress.setProgress(player.getCurrentPosition());
+                    progress.setProgress(mInsecAudioTotalDuration);
                     player.release();
                     player = null;
                     observer.stop();
+
 
                 }
             });
@@ -142,7 +169,9 @@ public class ActivityMarkerDetails extends AppCompatActivity {
             while (!stop.get()) {
 
 
-                progress.setProgress(player.getCurrentPosition());
+                if(player != null) {
+                    progress.setProgress(player.getCurrentPosition());
+                }
                 try {
                     Thread.sleep(50);
                 } catch (InterruptedException e) {

@@ -41,6 +41,7 @@ public class ActivityMarkerDetails extends AppCompatActivity {
     TextView tvDateTime = null;
     private int mInsecAudioTotalDuration = 0;
     TextView tvLoadAudioFromServerMessage = null;
+    private boolean insecAudioLoaded = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -102,6 +103,7 @@ public class ActivityMarkerDetails extends AppCompatActivity {
                 // Local temp file has been created
                 Log.e(TAG, "onSuccess: -> downloaded : " + mInsecAudioFileName );
 
+                insecAudioLoaded = true;
                 playInsecAudio();
             }
         }).addOnFailureListener(new OnFailureListener() {
@@ -116,9 +118,29 @@ public class ActivityMarkerDetails extends AppCompatActivity {
 
 
         toggleSenderINfoTextViews(false);
+
+
     }
 
+    @Override
+    public void onBackPressed() {
 
+       if(insecAudioLoaded){
+           stopPlayingInsecAudio();
+           super.onBackPressed();
+
+       }
+
+        return;
+    }
+
+    private void stopPlayingInsecAudio() {
+        if(player != null){
+            player.stop();
+            player.release();
+            player = null;
+        }
+    }
 
     private void playInsecAudio() {
 

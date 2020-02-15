@@ -152,8 +152,12 @@ public class ActivityMarkerDetails extends AppCompatActivity {
 
     private void rePlayInsecAudio() {
 
-        player.seekTo(0);
-        player.start();
+        if(player != null) {
+            player.seekTo(0);
+            player.start();
+        }else{
+            playInsecAudio();
+        }
 
     }
 

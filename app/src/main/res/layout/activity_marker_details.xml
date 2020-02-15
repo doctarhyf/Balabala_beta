@@ -51,7 +51,7 @@
         android:max="100"
         android:progress="0" />
     <Button
-
+        android:enabled="false"
         android:id="@+id/btnRePlayInsecAudio"
         android:text="Relay Audio"
         android:layout_width="match_parent"

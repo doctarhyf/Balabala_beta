@@ -68,7 +68,7 @@ public class ActivityMarkerDetails extends AppCompatActivity {
         btnRePlayInsecAudio.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                playInsecAudio();
+                rePlayInsecAudio();
             }
         });
 
@@ -104,6 +104,7 @@ public class ActivityMarkerDetails extends AppCompatActivity {
                 Log.e(TAG, "onSuccess: -> downloaded : " + mInsecAudioFileName );
 
                 insecAudioLoaded = true;
+                toggleReplayInsecAudioBtn();
                 playInsecAudio();
             }
         }).addOnFailureListener(new OnFailureListener() {
@@ -111,6 +112,8 @@ public class ActivityMarkerDetails extends AppCompatActivity {
             public void onFailure(@NonNull Exception exception) {
                 // Handle any errors
                 Log.e(TAG, "onFailure: -> " + exception.toString() );
+                insecAudioLoaded = false;
+                toggleReplayInsecAudioBtn();
             }
         });
 
@@ -121,6 +124,11 @@ public class ActivityMarkerDetails extends AppCompatActivity {
 
 
     }
+
+    private void toggleReplayInsecAudioBtn() {
+        btnRePlayInsecAudio.setEnabled(insecAudioLoaded);
+    }
+
 
     @Override
     public void onBackPressed() {
@@ -142,21 +150,29 @@ public class ActivityMarkerDetails extends AppCompatActivity {
         }
     }
 
+    private void rePlayInsecAudio() {
+
+        player.seekTo(0);
+        player.start();
+
+    }
+
     private void playInsecAudio() {
 
         toggleSenderINfoTextViews(true);
-        if(player != null){
+        if (player != null) {
             player.stop();
             player.release();
             player = null;
         }
+
         player = new MediaPlayer();
         try {
 
 
             String file = mLocalFile.getAbsolutePath();
 
-            Log.e(TAG, "playInsecAudio: file -> " + file );
+            Log.e(TAG, "playInsecAudio: file -> " + file);
             player.setDataSource(file);//(mLocalFile);
             player.prepare();
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
@@ -184,6 +200,7 @@ public class ActivityMarkerDetails extends AppCompatActivity {
         } catch (IOException e) {
             Log.e(TAG, "prepare() failed");
         }
+
     }
 
     private void toggleSenderINfoTextViews(boolean show) {

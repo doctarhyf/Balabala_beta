@@ -341,15 +341,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
             rb.setKey(dataSnapshot.getKey());
             Toast.makeText(MapsActivity.this, "Added new rb : " + rb.toString() + ", \nBy : " + rb.getSenderEmail() , Toast.LENGTH_LONG).show();
 
-            Vibrator v = (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);
-// Vibrate for 500 milliseconds
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                v.vibrate(VibrationEffect.createOneShot(500, VibrationEffect.DEFAULT_AMPLITUDE));
-            } else {
-                //deprecated in API 26
-                v.vibrate(500);
-            }
-
+            vibrate();
             //// TODO: 2020-02-13 REMAKE DATABASE RB IDS
             int rbIcon = R.drawable.rb_insec;RoadBlocks.GetDummyRoadBlockIconFromFirebaseDBRBType(MapsActivity.this, rb.getRoadBlockIdx());
             Marker marker = mMap.addMarker(new MarkerOptions().icon(BitmapDescriptorFactory.fromResource(rbIcon)).position(rb.getLatLng()));
@@ -375,6 +367,8 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         public void onChildRemoved(@NonNull DataSnapshot dataSnapshot) {
 
             Log.e(TAG, "onChildRemoved: -> " + dataSnapshot.toString() );
+            mMap.clear();
+            vibrate();
 
         }
 
@@ -388,6 +382,18 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 
         }
     };
+
+    private void vibrate() {
+        Vibrator v = (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);
+// Vibrate for 500 milliseconds
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            v.vibrate(VibrationEffect.createOneShot(500, VibrationEffect.DEFAULT_AMPLITUDE));
+        } else {
+            //deprecated in API 26
+            v.vibrate(500);
+        }
+
+    }
 
     @Override
     protected void onStart() {

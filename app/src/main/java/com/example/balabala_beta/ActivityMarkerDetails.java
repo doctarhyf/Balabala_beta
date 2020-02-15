@@ -143,10 +143,10 @@ public class ActivityMarkerDetails extends AppCompatActivity {
     }
 
     private void stopPlayingInsecAudio() {
-        if(player != null){
+        if(player != null ){
             player.stop();
-            player.release();
-            player = null;
+            //player.release();
+            //player = null;
         }
     }
 

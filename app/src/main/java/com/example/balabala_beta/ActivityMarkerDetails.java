@@ -40,11 +40,14 @@ public class ActivityMarkerDetails extends AppCompatActivity {
     TextView tvUser = null;
     TextView tvDateTime = null;
     private int mInsecAudioTotalDuration = 0;
+    TextView tvLoadAudioFromServerMessage = null;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_marker_details);
+
+        tvLoadAudioFromServerMessage = findViewById(R.id.tvLoadAudioFromServerMessage);
 
         user = FirebaseAuth.getInstance().getCurrentUser();
 
@@ -111,11 +114,15 @@ public class ActivityMarkerDetails extends AppCompatActivity {
 
 
 
+
+        toggleSenderINfoTextViews(false);
     }
 
 
 
     private void playInsecAudio() {
+
+        toggleSenderINfoTextViews(true);
         if(player != null){
             player.stop();
             player.release();
@@ -154,6 +161,20 @@ public class ActivityMarkerDetails extends AppCompatActivity {
             new Thread(observer).start();
         } catch (IOException e) {
             Log.e(TAG, "prepare() failed");
+        }
+    }
+
+    private void toggleSenderINfoTextViews(boolean show) {
+        if(show){
+
+            tvLoadAudioFromServerMessage.setVisibility(View.INVISIBLE);
+            tvUser.setVisibility(View.VISIBLE);
+            tvDateTime.setVisibility(View.VISIBLE);
+
+        }else{
+            tvLoadAudioFromServerMessage.setVisibility(View.VISIBLE);
+            tvUser.setVisibility(View.INVISIBLE);
+            tvDateTime.setVisibility(View.INVISIBLE);
         }
     }
 

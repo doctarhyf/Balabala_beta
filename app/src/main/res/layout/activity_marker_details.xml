@@ -21,6 +21,13 @@
 
     </com.google.android.material.appbar.AppBarLayout>
 
+
+    <TextView
+        android:id="@+id/tvLoadAudioFromServerMessage"
+        android:text="Loading Audio from server"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"/>
+
     <TextView
         android:id="@+id/textViewUser"
         android:layout_width="wrap_content"

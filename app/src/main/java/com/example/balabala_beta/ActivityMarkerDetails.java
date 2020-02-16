@@ -239,6 +239,8 @@ public class ActivityMarkerDetails extends AppCompatActivity {
             while (!stop.get()) {
 
 
+                Log.e(TAG, "run: efin runnin" );
+
                 if(player != null) {
                     progress.setProgress(player.getCurrentPosition());
                 }
@@ -249,6 +251,8 @@ public class ActivityMarkerDetails extends AppCompatActivity {
                 }
             }
         }
+
+
     }
 
     private MediaObserver observer = null;

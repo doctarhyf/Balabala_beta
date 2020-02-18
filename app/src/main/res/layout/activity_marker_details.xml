@@ -49,6 +49,9 @@
 
 
     <com.google.android.gms.maps.MapView
+        android:id="@+id/markerDetMap"
+        android:apiKey="@string/google_api_key"
+
         android:layout_width="match_parent"
         android:layout_height="360dp"/>
 

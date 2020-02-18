@@ -8,6 +8,8 @@ import java.text.SimpleDateFormat;
 import java.util.Calendar;
 
 public class Utils {
+    public static float FOLLOW_ME_ZOOM_LEVEL = 18;
+
     public static String GR_GS(Context contextCompat, int str_id) {
 
         return contextCompat.getString(str_id);

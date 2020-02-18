@@ -74,7 +74,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     private static final float MAP_DEFAULT_BLOCK_ZOOM_LEVEL = 20f;
     //private static final int DEFAULT_ROADBLOCK_ID = 0;
     private static final int NUM_DEF_ROAD_BLOCKS = 3;
-    private static final float FOLLOW_ME_ZOOM_LEVEL = 18;
+    //private static final float FOLLOW_ME_ZOOM_LEVEL = 18;
     private static final int INSECURITY_AUDIO_RECORD_TIME_SEC = 10;
     private static final String LOG_TAG = "MAP_ACT";
     private boolean firstShot = true;
@@ -321,7 +321,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                 Log.e(TAG, "onMapClick: -> dest : " + latLng.toString() );
                 mChoseDest = false;
 
-                mapCamGoto(latLng, FOLLOW_ME_ZOOM_LEVEL, true);
+                mapCamGoto(latLng, Utils.FOLLOW_ME_ZOOM_LEVEL, true);
 
 
             }else{
@@ -362,7 +362,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 
             // todo marker data foudnd
 
-            marker.setTag(dataSnapshot.getKey() + "\uD83D\uDE21" + rbInfo.getSenderEmail() );//user.getEmail() + "_" + user.getDisplayName() + "_" + rb.getLat() + "_" + rb.getLon() + "_" + System.currentTimeMillis() + "_" + mIsInsecMarker);
+            marker.setTag(dataSnapshot.getKey() + "\uD83D\uDE21" + rbInfo.getSenderEmail()  + "\uD83D\uDE21" + rbInfo.getLat()  + "\uD83D\uDE21" + rbInfo.getLon() );//user.getEmail() + "_" + user.getDisplayName() + "_" + rb.getLat() + "_" + rb.getLon() + "_" + System.currentTimeMillis() + "_" + mIsInsecMarker);
 
 
         }
@@ -739,7 +739,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                     /*CameraUpdate location = CameraUpdateFactory.newLatLngZoom(
                             gps.getLatLng(), FOLLOW_ME_ZOOM_LEVEL);
                     mMap.animateCamera(location);*/
-                    mapCamGoto(gps.getLatLng(), FOLLOW_ME_ZOOM_LEVEL, false);
+                    mapCamGoto(gps.getLatLng(), Utils.FOLLOW_ME_ZOOM_LEVEL, false);
 
                 firstShot = false;
                 }else {

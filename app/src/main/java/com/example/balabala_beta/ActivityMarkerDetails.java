@@ -7,12 +7,23 @@ import androidx.appcompat.widget.Toolbar;
 import android.media.MediaPlayer;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.PersistableBundle;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
+import com.example.balabala_beta.dummy.RoadBlocks;
+import com.google.android.gms.maps.CameraUpdate;
+import com.google.android.gms.maps.CameraUpdateFactory;
+import com.google.android.gms.maps.GoogleMap;
+import com.google.android.gms.maps.MapView;
+import com.google.android.gms.maps.OnMapReadyCallback;
+import com.google.android.gms.maps.model.BitmapDescriptorFactory;
+import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.Marker;
+import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.auth.FirebaseAuth;
@@ -26,7 +37,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-public class ActivityMarkerDetails extends AppCompatActivity {
+public class ActivityMarkerDetails extends AppCompatActivity implements OnMapReadyCallback {
 
     private static final String TAG = "AMD";
     private StorageReference storageRef = FirebaseStorage.getInstance().getReference();
@@ -43,11 +54,18 @@ public class ActivityMarkerDetails extends AppCompatActivity {
     TextView tvLoadAudioFromServerMessage = null;
     private boolean insecAudioLoaded = false;
     private String mInsecAudioFileSenderEmail = "no_email";
+    private GoogleMap mMap;
+    private MapView mMapView;
+    private Bundle mapViewBundle;
+    private String MAPVIEW_BUNDLE_KEY = "mvbk";
+    private LatLng mLatLng = null;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_marker_details);
+
+
 
         tvLoadAudioFromServerMessage = findViewById(R.id.tvLoadAudioFromServerMessage);
 
@@ -77,6 +95,7 @@ public class ActivityMarkerDetails extends AppCompatActivity {
         String[] tag = getIntent().getExtras().getString("tag").split("\uD83D\uDE21");
         mInsecAudioFileName = tag[0];
         mInsecAudioFileSenderEmail = tag[1];
+        mLatLng = new LatLng(Double.parseDouble(tag[2]), Double.parseDouble(tag[3]));
         tvUser.setText("Signale par : " + mInsecAudioFileSenderEmail);
 
         //Log.e(TAG, "onCreate: DA CHAK : -> " + mInsecAudioFileName);
@@ -128,7 +147,63 @@ public class ActivityMarkerDetails extends AppCompatActivity {
 
         toggleSenderINfoTextViews(false);
 
+        if(savedInstanceState != null){
+            mapViewBundle = savedInstanceState.getBundle(MAPVIEW_BUNDLE_KEY);
+        }
 
+        mMapView = findViewById(R.id.markerDetMap);
+        mMapView.onCreate(mapViewBundle);
+        mMapView.getMapAsync(this);
+
+    }
+
+    @Override
+    public void onSaveInstanceState(@NonNull Bundle outState, @NonNull PersistableBundle outPersistentState) {
+        super.onSaveInstanceState(outState, outPersistentState);
+
+        Bundle mapViewBundle = outState.getBundle(MAPVIEW_BUNDLE_KEY);
+        if(mapViewBundle == null){
+            mapViewBundle = new Bundle();
+            outState.putBundle(MAPVIEW_BUNDLE_KEY, mapViewBundle);
+        }
+
+        mMapView.onSaveInstanceState(mapViewBundle);
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        mMapView.onResume();
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+        mMapView.onStart();
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        mMapView.onStop();
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        mMapView.onPause();
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        mMapView.onDestroy();
+    }
+
+    @Override
+    public void onLowMemory() {
+        super.onLowMemory();
+        mMapView.onLowMemory();
     }
 
     private void toggleReplayInsecAudioBtn() {
@@ -227,6 +302,24 @@ public class ActivityMarkerDetails extends AppCompatActivity {
         }
     }
 
+    @Override
+    public void onMapReady(GoogleMap googleMap) {
+        Log.e(TAG, "onMapReady: map ready " );
+        mMap = googleMap;
+
+        if(mLatLng != null){
+
+            int rbIcon = R.drawable.rb_insec;
+            RoadBlocks.GetDummyRoadBlockIconFromFirebaseDBRBType(ActivityMarkerDetails.this, R.drawable.rb_insec);//rb.getRoadBlockIdx());
+            Marker marker = mMap.addMarker(new MarkerOptions().icon(BitmapDescriptorFactory.fromResource(rbIcon)).position(mLatLng));
+
+            CameraUpdate location = CameraUpdateFactory.newLatLngZoom(
+                    mLatLng, Utils.FOLLOW_ME_ZOOM_LEVEL);
+            mMap.animateCamera(location);
+        }
+
+    }
+
     private class MediaObserver implements Runnable {
         private AtomicBoolean stop = new AtomicBoolean(false);
 
@@ -239,7 +332,7 @@ public class ActivityMarkerDetails extends AppCompatActivity {
             while (!stop.get()) {
 
 
-                Log.e(TAG, "run: efin runnin" );
+                //Log.e(TAG, "run: efin runnin" );
 
                 if(player != null) {
                     progress.setProgress(player.getCurrentPosition());

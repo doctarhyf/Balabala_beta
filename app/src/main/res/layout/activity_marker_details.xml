@@ -71,4 +71,20 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"/>
 
+    <Button
+
+        android:id="@+id/subscribeButton"
+        android:text="Subscribe to nitication"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"/>
+
+    <Button
+
+        android:id="@+id/logTokenButton"
+        android:text="Log Tokken"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"/>
+
+
+
 </LinearLayout>

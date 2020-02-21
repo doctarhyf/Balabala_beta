@@ -2,6 +2,7 @@ package com.example.balabala_beta;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -18,6 +19,7 @@ import com.google.firebase.auth.FirebaseAuth;
 public class MainActivity extends AppCompatActivity {
 
 
+    private static final String TAG = "MAINACT";
     public EditText emailId, passwd;
     Button btnSignUp;
     TextView signIn;
@@ -73,6 +75,25 @@ public class MainActivity extends AppCompatActivity {
                 startActivity(I);
             }
         });
+
+        /*Intent fbNotificationIntent = getIntent();
+        if(fbNotificationIntent != null){
+;
+            Log.e(TAG, "onCreate: is not null");// + fbNotificationIntent.getExtras().keySet().toString());
+        }else{
+            Log.e(TAG, "onCreate: fbnot is null" );
+        }*/
+
+        if (getIntent().getExtras() != null) {
+
+            Log.e(TAG, "onCreate: DAFB");
+            for (String key : getIntent().getExtras().keySet()) {
+
+                String value = getIntent().getExtras().getString(key);
+                Log.d(TAG, "Key: " + key + " Value: " + value);
+            }
+            Log.e(TAG, "onCreate: DAFB --- END");
+        }
     }
 }
 

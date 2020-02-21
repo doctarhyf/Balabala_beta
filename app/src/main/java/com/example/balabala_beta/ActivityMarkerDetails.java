@@ -80,7 +80,7 @@ public class ActivityMarkerDetails extends AppCompatActivity implements OnMapRea
             NotificationManager notificationManager =
                     getSystemService(NotificationManager.class);
             notificationManager.createNotificationChannel(new NotificationChannel(channelId,
-                    channelName, NotificationManager.IMPORTANCE_LOW));
+                    channelName, NotificationManager.IMPORTANCE_HIGH));
         }
 
         if (getIntent().getExtras() != null) {
